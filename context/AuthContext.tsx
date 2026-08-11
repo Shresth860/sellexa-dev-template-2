@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export interface Address {
@@ -71,28 +71,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalView, setAuthModalView] = useState<"login" | "signup" | "otp">("login");
   const [pendingContact, setPendingContact] = useState("");
 
-  useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("sellexa_user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    } catch (e) {
-      console.error("Failed to load user session", e);
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      if (user) {
-        localStorage.setItem("sellexa_user", JSON.stringify(user));
-      } else {
-        localStorage.removeItem("sellexa_user");
-      }
-    } catch (e) {
-      console.error("Failed to save user session", e);
-    }
-  }, [user]);
 
   const openAuthModal = (view: "login" | "signup" = "login") => {
     setAuthModalView(view);
@@ -107,26 +85,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithOtp = async (otpCode: string): Promise<boolean> => {
     if (otpCode.length < 4) return false;
 
-    const isEmail = pendingContact.includes("@");
-    const newUser: UserProfile = {
-      ...DEFAULT_USER,
-      email: isEmail ? pendingContact : DEFAULT_USER.email,
-      phone: !isEmail ? pendingContact : DEFAULT_USER.phone,
-      name: isEmail ? pendingContact.split("@")[0] : "Sellexa User",
-    };
-
-    setUser(newUser);
+    setUser(DEFAULT_USER);
     closeAuthModal();
     return true;
   };
 
-  const loginWithSocial = async (provider: "google" | "apple") => {
-    const socialUser: UserProfile = {
-      ...DEFAULT_USER,
-      name: provider === "google" ? "Google User" : "Apple User",
-      email: `${provider}.user@sellexa.in`,
-    };
-    setUser(socialUser);
+  const loginWithSocial = async (_provider?: "google" | "apple") => {
+    setUser(DEFAULT_USER);
     closeAuthModal();
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -25,8 +25,8 @@ export function AuthForm({
   const activeMode: "login" | "signup" = mode
     ? mode
     : isSignupPath || initialView === "signup"
-    ? "signup"
-    : "login";
+      ? "signup"
+      : "login";
 
   const {
     closeAuthModal,
@@ -88,7 +88,7 @@ export function AuthForm({
 
   const handleSendOtp = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    setInputError(""); 
+    setInputError("");
 
     const validationError = validateContact(contactInput);
     if (validationError) {
@@ -160,21 +160,8 @@ export function AuthForm({
           <span>Back</span>
         </button>
 
-        <div className="w-16 h-16 rounded-full bg-pink-600 flex items-center justify-center text-white mb-5 shadow-lg shadow-pink-600/20">
-          <svg
-            className="w-9 h-9"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          > 
-            <circle cx="12" cy="12" r="9" />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3.6 9h16.8M3.6 15h16.8M12 3v18"
-            />
-          </svg>
+        <div className="w-14 h-14 rounded-full bg-[#171a18] flex items-center justify-center text-white mb-4 shadow-md shadow-zinc-900/20">
+          <span className="text-2xl font-black tracking-tighter select-none">S</span>
         </div>
 
         <h2 className="text-2xl font-bold text-zinc-900 mb-1 tracking-tight">
@@ -249,9 +236,14 @@ export function AuthForm({
         </svg>
       </div>
 
-      <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 mb-4 tracking-tight">
-        {activeMode === "login" ? "Welcome back" : "Create your account"}
+      <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 mb-1.5 tracking-tight">
+        {activeMode === "login" ? "Welcome back" : "Welcome to Sellexa"}
       </h2>
+      <p className="text-xs sm:text-sm text-zinc-500 text-center mb-5 max-w-xs leading-relaxed">
+        {activeMode === "signup"
+          ? "Discover products and enjoy effortless shopping."
+          : " "}
+      </p>
 
       <div className="w-full flex flex-col gap-2.5 mb-3">
         <Button
