@@ -27,14 +27,14 @@ export default function EmptyProductState({
         No products found
       </h3>
 
-      <p className="mt-1 max-w-sm text-xs text-zinc-500">
+      <p className="mt-1 max-w-sm text-sm text-zinc-500">
         Try a different product name or category.
       </p>
 
       <button
         type="button"
         onClick={handleClear}
-        className="mt-5 rounded-xl bg-[#171a18] px-4 py-3 text-xs font-bold text-white transition hover:bg-zinc-700"
+        className="mt-5 rounded-xl bg-[#171a18] px-4 py-3 text-sm font-bold text-white transition hover:bg-zinc-700"
       >
         Clear search
       </button>

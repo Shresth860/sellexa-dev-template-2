@@ -70,7 +70,7 @@ export default function ProductSection({
 
       {/* Product Grid */}
       {products.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-6">
           {products.map((product) => (
             <ProductCard
               key={product.id}

@@ -9,6 +9,7 @@ export type Product = {
   badge?: string;
   keywords?: string[];
   image: string;
+  images?: string[];
 };
 
 export const categories = [
@@ -20,8 +21,11 @@ export const categories = [
   "Sports",
 ];
 
+const img = (id: string) =>
+  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&h=570&q=90`;
+
 export const products: Product[] = [
-   {
+  {
     id: 1,
     name: "Nova Pro Max",
     category: "Electronics",
@@ -30,10 +34,23 @@ export const products: Product[] = [
     rating: 4.8,
     reviews: 312,
     badge: "Best Seller",
-    keywords: ["phone", "phones", "smartphone", "mobile", "camera"],
-    image:
-      "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?auto=format&fit=crop&w=900&q=80",
+    keywords: [
+      "phone",
+      "phones",
+      "smartphone",
+      "mobile",
+      "camera",
+    ],
+    image: img("photo-1511707171634-5f897ff02aa9"),
+    images: [
+      img("photo-1511707171634-5f897ff02aa9"),
+      img("photo-1592899677977-9c10ca588bbd"),
+      img("photo-1598327105666-5b89351aff97"),
+      img("photo-1556656793-08538906a9f8"),
+      img("photo-1533228100845-08145b01de14"),
+    ],
   },
+
   {
     id: 2,
     name: "AirPulse Pro",
@@ -43,10 +60,23 @@ export const products: Product[] = [
     rating: 4.7,
     reviews: 186,
     badge: "Popular",
-    keywords: ["headphones", "headphone", "audio", "wireless", "earbuds"],
-    image:
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=80",
+    keywords: [
+      "headphones",
+      "headphone",
+      "audio",
+      "wireless",
+      "earbuds",
+    ],
+    image: img("photo-1505740420928-5e560c06d30e"),
+    images: [
+      img("photo-1505740420928-5e560c06d30e"),
+      img("photo-1484704849700-f032a568e944"),
+      img("photo-1577174881658-0f30ed549adc"),
+      img("photo-1583394838336-acd977736f90"),
+      img("photo-1546435770-a3e426bf472b"),
+    ],
   },
+
   {
     id: 3,
     name: "Apex Watch S2",
@@ -54,9 +84,23 @@ export const products: Product[] = [
     price: 18999,
     rating: 4.6,
     reviews: 94,
-    image:
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80",
+    keywords: [
+      "watch",
+      "smartwatch",
+      "wearable",
+      "fitness",
+      "smart watch",
+    ],
+    image: img("photo-1523275335684-37898b6baf30"),
+    images: [
+      img("photo-1523275335684-37898b6baf30"),
+      img("photo-1508685096489-7aacd43bd3b1"),
+      img("photo-1544117519-31a4b719223d"),
+      img("photo-1434493789847-2f02dc6ca35d"),
+      img("photo-1579586337278-3befd40fd17a"),
+    ],
   },
+
   {
     id: 4,
     name: "Stride X1",
@@ -66,9 +110,23 @@ export const products: Product[] = [
     rating: 4.7,
     reviews: 128,
     badge: "New",
-    image:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80",
+    keywords: [
+      "shoes",
+      "sneakers",
+      "fashion",
+      "running",
+      "sports shoes",
+    ],
+    image: img("photo-1542291026-7eec264c27ff"),
+    images: [
+      img("photo-1542291026-7eec264c27ff"),
+      img("photo-1549298916-b41d501d3772"),
+      img("photo-1552346154-21d32810aba3"),
+      img("photo-1600185365483-26d7a4cc7519"),
+      img("photo-1460353581641-37baddab0fa2"),
+    ],
   },
+
   {
     id: 5,
     name: "Vision Cam 4K",
@@ -76,9 +134,24 @@ export const products: Product[] = [
     price: 45999,
     rating: 4.8,
     reviews: 76,
-    image:
-      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=80",
+    keywords: [
+      "camera",
+      "dslr",
+      "mirrorless",
+      "photography",
+      "video",
+      "4k",
+    ],
+    image: img("photo-1516035069371-29a1b244cc32"),
+    images: [
+      img("photo-1516035069371-29a1b244cc32"),
+      img("photo-1502920917128-1aa500764cbd"),
+      img("photo-1512790182412-b19e6d62bc39"),
+      img("photo-1606986628253-3d2e5a3e4c3b"),
+      img("photo-1607462109225-6b64ae2dd3cb"),
+    ],
   },
+
   {
     id: 6,
     name: "ZenBook Air",
@@ -88,10 +161,23 @@ export const products: Product[] = [
     rating: 4.9,
     reviews: 58,
     badge: "Top Rated",
-    keywords: ["laptop", "notebook", "computer", "ultrabook"],
-    image:
-      "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=80",
+    keywords: [
+      "laptop",
+      "notebook",
+      "computer",
+      "ultrabook",
+      "macbook",
+    ],
+    image: img("photo-1496181133206-80ce9b88a853"),
+    images: [
+      img("photo-1496181133206-80ce9b88a853"),
+      img("photo-1517336714739-489689fd1ca8"),
+      img("photo-1541807084-5c52b6b3adef"),
+      img("photo-1593642702821-c8da6771f0c6"),
+      img("photo-1588872657578-7efd1f1555ed"),
+    ],
   },
+
   {
     id: 7,
     name: "Minimal Chair",
@@ -100,9 +186,23 @@ export const products: Product[] = [
     oldPrice: 10999,
     rating: 4.6,
     reviews: 72,
-    image:
-      "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=900&q=80",
+    keywords: [
+      "chair",
+      "furniture",
+      "home",
+      "office",
+      "interior",
+    ],
+    image: img("photo-1503602642458-232111445657"),
+    images: [
+      img("photo-1503602642458-232111445657"),
+      img("photo-1592078615290-033ee584e267"),
+      img("photo-1580480055273-228ff5388ef8"),
+      img("photo-1549497538-303791108f95"),
+      img("photo-1598300042247-d088f8ab3a91"),
+    ],
   },
+
   {
     id: 8,
     name: "Essential Skin Set",
@@ -112,7 +212,20 @@ export const products: Product[] = [
     rating: 4.8,
     reviews: 214,
     badge: "Trending",
-    image:
-      "https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=900&q=80",
+    keywords: [
+      "beauty",
+      "skincare",
+      "skin",
+      "cosmetics",
+      "face care",
+    ],
+    image: img("photo-1556228578-8c89e6adf883"),
+    images: [
+      img("photo-1556228578-8c89e6adf883"),
+      img("photo-1598440947619-2c35fc9aa908"),
+      img("photo-1571781926291-c477ebfd024b"),
+      img("photo-1612817288484-6f916006741a"),
+      img("photo-1608248543803-ba4f8c70ae0b"),
+    ],
   },
 ];
