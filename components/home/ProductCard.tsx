@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   Heart,
@@ -47,27 +48,21 @@ export default function ProductCard({
     productImages[selectedImage] || product.image;
 
   const handleWishlistToggle = () => {
-    setIsWishlisted((prev) => {
-      const nextValue = !prev;
-      onToggleWishlist?.(nextValue);
-      return nextValue;
-    });
+    const nextValue = !isWishlisted;
+    setIsWishlisted(nextValue);
+    onToggleWishlist?.(nextValue);
   };
 
   const handleAddToCart = () => {
-    setQuantity((value) => {
-      const nextValue = value + 1;
-      onQuantityChange?.(nextValue);
-      return nextValue;
-    });
+    const nextValue = quantity + 1;
+    setQuantity(nextValue);
+    onQuantityChange?.(nextValue);
   };
 
   const handleQuantityChange = (delta: number) => {
-    setQuantity((value) => {
-      const nextValue = Math.max(0, value + delta);
-      onQuantityChange?.(nextValue);
-      return nextValue;
-    });
+    const nextValue = Math.max(0, quantity + delta);
+    setQuantity(nextValue);
+    onQuantityChange?.(nextValue);
   };
 
   return (
@@ -411,6 +406,13 @@ export default function ProductCard({
               Add to Cart
             </button>
           )}
+
+          <Link
+            href={`/product/${product.id}`}
+            className="inline-flex h-[38px] items-center justify-center rounded-[7px] border border-zinc-200 bg-zinc-50 px-2.5 text-[10px] font-bold uppercase tracking-[0.04em] text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-100"
+          >
+            Details
+          </Link>
 
           {/* Wishlist */}
 

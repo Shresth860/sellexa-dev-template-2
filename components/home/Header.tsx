@@ -21,6 +21,8 @@ type HeaderProps = {
   setActiveCategory: (category: string) => void;
   cartCount: number;
   wishlistCount: number;
+  showBackHome?: boolean;
+  backHomeHref?: string;
 };
 
 export default function Header({
@@ -30,6 +32,8 @@ export default function Header({
   setActiveCategory,
   cartCount,
   wishlistCount,
+  showBackHome = false,
+  backHomeHref = "/",
 }: HeaderProps) {
   const [mobileMenu, setMobileMenu] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -217,6 +221,16 @@ export default function Header({
               </span>
             )}
           </button>
+
+          {showBackHome && (
+            <button
+              type="button"
+              onClick={() => router.push(backHomeHref)}
+              className="hidden h-12 shrink-0 items-center rounded-full border border-zinc-200 bg-zinc-50 px-4 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-100 sm:flex"
+            >
+              Back to home
+            </button>
+          )}
 
           {/* User */}
           <button

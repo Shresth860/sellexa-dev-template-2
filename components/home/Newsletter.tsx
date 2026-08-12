@@ -29,7 +29,7 @@ export default function Newsletter() {
     >
       {/* Content */}
       <div>
-        <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-zinc-500">
+        <span className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-zinc-500">
           Stay in the loop
         </span>
 

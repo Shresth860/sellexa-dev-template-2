@@ -10,15 +10,15 @@ import ProductSection from "@/components/home/ProductSection";
 import SellexaDifference from "@/components/home/SellexaDifference";
 import Newsletter from "@/components/home/Newsletter";
 import Footer from "@/components/home/Footer";
+import { useCart } from "@/context/CartContext";
 
 import { products } from "@/data/product";
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [cartItems, setCartItems] = useState<Record<number, number>>({});
-  const [wishlistItems, setWishlistItems] = useState<Record<number, boolean>>({});
   const [sortBy, setSortBy] = useState("Popular");
+  const { cartItems, wishlistItems, cartCount, wishlistCount, updateCartQuantity, toggleWishlist } = useCart();
 
   const filteredProducts = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -64,40 +64,12 @@ export default function Home() {
     }
   }, [filteredProducts, sortBy]);
 
-  const cartCount = Object.values(cartItems).reduce((total, quantity) => total + quantity, 0);
-  const wishlistCount = Object.keys(wishlistItems).length;
-
   const handleCartQuantityChange = (productId: number, nextQuantity: number) => {
-    setCartItems((prev) => {
-      const currentQuantity = prev[productId] ?? 0;
-      if (nextQuantity <= 0) {
-        if (!currentQuantity) return prev;
-        const updated = { ...prev };
-        delete updated[productId];
-        return updated;
-      }
-
-      if (currentQuantity === nextQuantity) return prev;
-
-      return {
-        ...prev,
-        [productId]: nextQuantity,
-      };
-    });
+    updateCartQuantity(productId, nextQuantity);
   };
 
   const handleToggleWishlist = (productId: number, isActive: boolean) => {
-    setWishlistItems((prev) => {
-      const next = { ...prev };
-
-      if (isActive) {
-        next[productId] = true;
-      } else {
-        delete next[productId];
-      }
-
-      return next;
-    });
+    toggleWishlist(productId, isActive);
   };
 
   return (
