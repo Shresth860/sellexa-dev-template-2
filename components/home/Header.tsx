@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import {
-  Heart,
+  Heart, 
   Menu,
   Search,
   ShoppingBag,
@@ -36,9 +36,15 @@ export default function Header({
   backHomeHref = "/",
 }: HeaderProps) {
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
+
   const { user, openAuthModal } = useAuth();
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const suggestions = query
     .trim()
@@ -71,12 +77,12 @@ export default function Header({
         .toUpperCase()
     : "U";
 
-  const handleCartNavigation = () => {
-    router.push("/cart");
-  };
-
   const handleWishlistNavigation = () => {
     router.push("/wishlist");
+  };
+
+  const handleCartNavigation = () => {
+    router.push("/");
   };
 
   return (
@@ -174,7 +180,6 @@ export default function Header({
         {/* Actions */}
         <div className="flex shrink-0 items-center gap-2">
 
-          {/* Cart */}
           <button
             type="button"
             aria-label="Shopping cart"
@@ -187,7 +192,7 @@ export default function Header({
               strokeWidth={1.8}
             />
 
-            {cartCount > 0 && (
+            {isHydrated && cartCount > 0 && (
               <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
                 {cartCount}
               </span>
@@ -208,12 +213,13 @@ export default function Header({
               strokeWidth={1.8}
             />
 
-            {wishlistCount > 0 && (
+            {isHydrated && wishlistCount > 0 && (
               <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
                 {wishlistCount}
               </span>
             )}
           </button>
+
 
           {showBackHome && (
             <button
@@ -236,19 +242,19 @@ export default function Header({
                 {userInitials}
               </span>
 
+
               <span className="hidden whitespace-nowrap text-[11px] font-semibold text-zinc-800 md:block">
                 {userDisplayName}
               </span>
             </Link>
           ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal("login")}
+            <Link
+              href="/auth/login"
               className="hidden h-11 shrink-0 items-center gap-2 rounded-full bg-[#171a18] text-white px-5 text-xs font-semibold transition hover:bg-zinc-800 sm:flex cursor-pointer shadow-xs"
             >
               <User width={15} height={15} />
               <span>Login / Sign Up</span>
-            </button>
+            </Link>
           )}
 
           {/* Mobile Menu */}

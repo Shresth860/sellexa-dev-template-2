@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { User, MapPin, ChevronRight, LogOut } from "lucide-react";
 import type { UserProfile } from "@/context/AuthContext";
 
@@ -10,6 +9,7 @@ type ProfileSidebarProps = {
   displayName: string;
   initials: string;
   activeTab: "personal" | "addresses";
+  setActiveTab: (tab: "personal" | "addresses") => void;
   onLogout: () => void;
 };
 
@@ -18,6 +18,7 @@ export function ProfileSidebar({
   displayName,
   initials,
   activeTab,
+  setActiveTab,
   onLogout,
 }: ProfileSidebarProps) {
   return (
@@ -37,35 +38,35 @@ export function ProfileSidebar({
       </div>
 
       <div className="bg-white rounded-2xl p-2.5 border border-zinc-200/90 shadow-sm flex flex-col gap-1">
-        <Link
-          href="/profile/info"
-          className={`w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl text-sm font-semibold transition-all ${
-            activeTab === "personal"
+        <button
+          type="button"
+          onClick={() => setActiveTab("personal")}
+          className={`w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeTab === "personal"
               ? "bg-[#0f172a] text-white shadow-md"
               : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900"
-          }`}
+            }`}
         >
           <div className="flex items-center gap-3">
             <User className={`w-4 h-4 ${activeTab === "personal" ? "text-white" : "text-zinc-500"}`} />
             <span>Personal Details</span>
           </div>
           <ChevronRight className={`w-4 h-4 ${activeTab === "personal" ? "text-zinc-400" : "text-zinc-300"}`} />
-        </Link>
+        </button>
 
-        <Link
-          href="/profile/address"
-          className={`w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl text-sm font-semibold transition-all ${
-            activeTab === "addresses"
+        <button
+          type="button"
+          onClick={() => setActiveTab("addresses")}
+          className={`w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeTab === "addresses"
               ? "bg-[#0f172a] text-white shadow-md"
               : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900"
-          }`}
+            }`}
         >
           <div className="flex items-center gap-3">
             <MapPin className={`w-4 h-4 ${activeTab === "addresses" ? "text-white" : "text-zinc-500"}`} />
             <span>Saved Addresses</span>
           </div>
           <ChevronRight className={`w-4 h-4 ${activeTab === "addresses" ? "text-zinc-400" : "text-zinc-300"}`} />
-        </Link>
+        </button>
 
         <button
           type="button"

@@ -175,9 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    if (typeof window !== "undefined") {
-      window.location.href = "/";
-    }
+    router.push("/");
   };
 
   return (
