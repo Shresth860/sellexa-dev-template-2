@@ -7,10 +7,12 @@ export interface Address {
   id: string;
   name: string;
   phone: string;
+  houseNumber?: string;
   street: string;
   city: string;
   state: string;
   pincode: string;
+  type?: "Home" | "Work";
   isDefault: boolean;
 }
 
@@ -22,6 +24,7 @@ export interface UserProfile {
   email: string;
   phone: string;
   avatar: string;
+  walletBalance?: number;
   addresses: Address[];
 }
 
@@ -37,26 +40,33 @@ interface AuthContextType {
   setPendingContact: (contact: string) => void;
   loginWithOtp: (otpCode: string) => Promise<boolean>;
   loginWithSocial: (provider: "google" | "apple") => Promise<void>;
+  updateProfile: (updated: Partial<UserProfile>) => void;
+  addAddress: (address: Omit<Address, "id">) => void;
+  deleteAddress: (id: string) => void;
+  setDefaultAddress: (id: string) => void;
   logout: () => void;
 }
 
 const DEFAULT_USER: UserProfile = {
   id: "usr_1",
-  name: "Alex Morgan",
-  firstName: "Alex",
-  lastName: "Morgan",
-  email: "alex.morgan@example.com",
-  phone: "9876543210",
+  name: "Aarav Sharma",
+  firstName: "Aarav",
+  lastName: "Sharma",
+  email: "aarav.sharma@example.com",
+  phone: "+91 98765 43210",
   avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
+  walletBalance: 1250.0,
   addresses: [
     {
       id: "addr_1",
-      name: "Alex Morgan",
+      name: "Aarav Sharma",
       phone: "+91 98765 43210",
-      street: "Flat 402, Highrise Heights, MG Road",
+      houseNumber: "Flat 402",
+      street: "Highrise Heights, MG Road",
       city: "Bengaluru",
       state: "Karnataka",
       pincode: "560001",
+      type: "Home",
       isDefault: true,
     },
   ],
@@ -71,6 +81,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalView, setAuthModalView] = useState<"login" | "signup" | "otp">("login");
   const [pendingContact, setPendingContact] = useState("");
 
+  const updateProfile = (updated: Partial<UserProfile>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updatedFirstName = updated.firstName ?? prev.firstName ?? "";
+      const updatedLastName = updated.lastName ?? prev.lastName ?? "";
+      const fullName = `${updatedFirstName} ${updatedLastName}`.trim() || prev.name;
+      return {
+        ...prev,
+        ...updated,
+        name: fullName,
+      };
+    });
+  };
+
+  const addAddress = (newAddrData: Omit<Address, "id">) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const newId = `addr_${Date.now()}`;
+      const isFirst = prev.addresses.length === 0;
+      const newAddress: Address = {
+        ...newAddrData,
+        id: newId,
+        isDefault: newAddrData.isDefault || isFirst,
+      };
+      
+      let updatedAddresses = prev.addresses;
+      if (newAddress.isDefault) {
+        updatedAddresses = updatedAddresses.map((a) => ({ ...a, isDefault: false }));
+      }
+
+      return {
+        ...prev,
+        addresses: [...updatedAddresses, newAddress],
+      };
+    });
+  };
+
+  const deleteAddress = (id: string) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const filtered = prev.addresses.filter((a) => a.id !== id);
+      if (filtered.length > 0 && !filtered.some((a) => a.isDefault)) {
+        filtered[0].isDefault = true;
+      }
+      return { ...prev, addresses: filtered };
+    });
+  };
+
+  const setDefaultAddress = (id: string) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        addresses: prev.addresses.map((a) => ({
+          ...a,
+          isDefault: a.id === id,
+        })),
+      };
+    });
+  };
 
   const openAuthModal = (view: "login" | "signup" = "login") => {
     setAuthModalView(view);
@@ -105,6 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
+    router.push("/");
   };
 
   return (
@@ -121,6 +192,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setPendingContact,
         loginWithOtp,
         loginWithSocial,
+        updateProfile,
+        addAddress,
+        deleteAddress,
+        setDefaultAddress,
         logout,
       }}
     >
