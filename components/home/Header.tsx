@@ -87,7 +87,7 @@ export default function Header({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search products..."
-              className="min-w-0 flex-1 bg-transparent px-3 text-[11px] text-zinc-900 outline-none placeholder:text-zinc-400"
+              className="min-w-0 flex-1 bg-transparent px-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400"
             />
 
             {query ? (
@@ -122,7 +122,7 @@ export default function Header({
                 <a
                   key={product.id}
                   href={`#product-${product.id}`}
-                  className="block border-b border-zinc-100 px-3 py-2 text-[11px] text-zinc-900 transition hover:bg-zinc-50"
+                  className="block border-b border-zinc-100 px-3 py-2 text-sm text-zinc-900 transition hover:bg-zinc-50"
                   onClick={() => {
                     setQuery(product.name);
                     setActiveCategory(product.category);
@@ -132,7 +132,7 @@ export default function Header({
                     {product.name}
                   </span>
 
-                  <span className="ml-2 text-[10px] text-zinc-500">
+                  <span className="ml-2 text-xs text-zinc-500">
                     {product.category}
                   </span>
                 </a>
@@ -271,7 +271,7 @@ export default function Header({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search products..."
-              className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-zinc-400"
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-zinc-400"
             />
           </div>
         </div>

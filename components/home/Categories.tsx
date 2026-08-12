@@ -22,7 +22,7 @@ export default function Categories({
       {/* Section Header */}
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-zinc-500">
+          <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-zinc-500">
             Explore Sellexa
           </span>
 
@@ -33,7 +33,7 @@ export default function Categories({
 
         <a
           href="#shop"
-          className="flex items-center gap-2 text-[11px] font-extrabold text-zinc-600 transition hover:text-zinc-950"
+          className="flex items-center gap-2 text-sm font-extrabold text-zinc-600 transition hover:text-zinc-950"
         >
           View all
 
