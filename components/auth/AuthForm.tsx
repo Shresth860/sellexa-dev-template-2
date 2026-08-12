@@ -320,11 +320,11 @@ export function AuthForm({
 
       <p className="text-xs text-zinc-400 text-center mt-4 leading-relaxed max-w-xs">
         By continuing, you agree to our{" "}
-        <a href="#" className="underline text-zinc-600 hover:text-zinc-900">
+        <a href="#shop" className="underline text-zinc-600 hover:text-zinc-900">
           Terms
         </a>{" "}
         and{" "}
-        <a href="#" className="underline text-zinc-600 hover:text-zinc-900">
+        <a href="#shop" className="underline text-zinc-600 hover:text-zinc-900">
           Privacy Policy
         </a>
         .
