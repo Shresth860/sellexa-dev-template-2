@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 import {
   Heart,
   Menu,
   Search,
   ShoppingBag,
+  User,
   X,
 } from "lucide-react";
 
 import type { Product } from "@/data/product";
-import { dummyUser as user } from "@/data/user";
 
 type HeaderProps = {
   query: string;
@@ -26,6 +28,7 @@ export default function Header({
   setActiveCategory,
 }: HeaderProps) {
   const [mobileMenu, setMobileMenu] = useState(false);
+  const { user, openAuthModal } = useAuth();
 
   const suggestions = query
     .trim()
@@ -47,12 +50,16 @@ export default function Header({
         .slice(0, 5)
     : [];
 
-  const userInitials = user.name
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  const userDisplayName = user ? (user.name || `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User") : "";
+
+  const userInitials = userDisplayName
+    ? userDisplayName
+        .split(" ")
+        .map((part) => part[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "U";
 
   return (
     <header className="mx-auto mt-3 w-[calc(100%-28px)] max-w-[1720px] ">
@@ -60,8 +67,8 @@ export default function Header({
       <div className="flex h-[76px] w-full items-center rounded-[22px] border border-zinc-200/80 bg-white px-3 shadow-sm sm:px-4">
 
         {/* Logo */}
-        <a
-          href="#"
+        <Link
+          href="/"
           className="flex shrink-0 items-center gap-2 px-2 sm:px-3"
         >
           <span className="grid h-8 w-8 place-items-center rounded-[9px] bg-[#171a18] text-sm font-black text-white">
@@ -71,7 +78,7 @@ export default function Header({
           <span className="text-[15px] font-black tracking-[-0.04em]">
             SELLEXA
           </span>
-        </a>
+        </Link>
 
         {/* Search */}
         <div className="relative ml-2 w-full max-w-[330px] sm:ml-4">
@@ -181,19 +188,31 @@ export default function Header({
             </span>
           </button>
 
-          {/* User */}
-          <button
-            type="button"
-            className="hidden h-12 shrink-0 items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 pr-4 transition hover:border-zinc-300 hover:bg-zinc-50 sm:flex"
-          >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#f8faf4] text-[11px] font-bold text-zinc-900 ring-1 ring-zinc-200">
-              {userInitials}
-            </span>
+          {/* User Profile Link or Login Button */}
+          {user ? (
+            <Link
+              href="/profile"
+              className="hidden h-12 shrink-0 items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 pr-4 transition hover:border-zinc-300 hover:bg-zinc-50 sm:flex"
+              title="My Profile"
+            >
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#171a18] text-[11px] font-bold text-white ring-1 ring-zinc-200">
+                {userInitials}
+              </span>
 
-            <span className="hidden whitespace-nowrap text-[11px] font-semibold text-zinc-800 md:block">
-              {user.name}
-            </span>
-          </button>
+              <span className="hidden whitespace-nowrap text-[11px] font-semibold text-zinc-800 md:block">
+                {userDisplayName}
+              </span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal("login")}
+              className="hidden h-11 shrink-0 items-center gap-2 rounded-full bg-[#171a18] text-white px-5 text-xs font-semibold transition hover:bg-zinc-800 sm:flex cursor-pointer shadow-xs"
+            >
+              <User width={15} height={15} />
+              <span>Login / Sign Up</span>
+            </button>
+          )}
 
           {/* Mobile Menu */}
           <button
