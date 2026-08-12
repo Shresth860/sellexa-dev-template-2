@@ -27,13 +27,8 @@ export default function RootLayout({
       className={`${manrope.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="h-full" suppressHydrationWarning>
-        <AuthProvider>
-          <CartProvider>
-            {children}
-            <AuthModal />
-          </CartProvider>
-        </AuthProvider>
+      <body className="h-full">
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
