@@ -12,6 +12,10 @@ type ProductSectionProps = {
   activeCategory: string;
   setQuery: (value: string) => void;
   setActiveCategory: (category: string) => void;
+  sortBy: string;
+  setSortBy: (value: string) => void;
+  onCartQuantityChange: (productId: number, nextQuantity: number) => void;
+  onToggleWishlist: (productId: number, isActive: boolean) => void;
 };
 
 export default function ProductSection({
@@ -20,6 +24,10 @@ export default function ProductSection({
   activeCategory,
   setQuery,
   setActiveCategory,
+  sortBy,
+  setSortBy,
+  onCartQuantityChange,
+  onToggleWishlist,
 }: ProductSectionProps) {
   return (
     <section
@@ -44,18 +52,23 @@ export default function ProductSection({
 
         {/* Controls */}
         <div className="flex items-center justify-between gap-5">
-          <button
-            type="button"
-            className="flex h-9 items-center gap-2 rounded-xl border border-zinc-200 bg-transparent px-3 text-[10px] text-zinc-500"
-          >
-            Sort by
-
-            <strong className="text-zinc-800">
-              Popular
-            </strong>
-
-            <ChevronDown size={13} />
-          </button>
+          <div className="relative">
+            <label className="sr-only" htmlFor="sort-products">
+              Sort products
+            </label>
+            <select
+              id="sort-products"
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value)}
+              className="flex h-9 appearance-none items-center gap-2 rounded-xl border border-zinc-200 bg-transparent px-3 pr-8 text-[10px] text-zinc-500 outline-none transition hover:border-zinc-300"
+            >
+              <option value="Popular">Popular</option>
+              <option value="Newest">Newest</option>
+              <option value="Price: Low to High">Price: Low to High</option>
+              <option value="Price: High to Low">Price: High to Low</option>
+            </select>
+            <ChevronDown size={13} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+          </div>
 
           <a
             href="#shop"
@@ -75,6 +88,11 @@ export default function ProductSection({
             <ProductCard
               key={product.id}
               product={product}
+              quantity={0}
+              onQuantityChange={(nextQuantity) =>
+                onCartQuantityChange(product.id, nextQuantity)
+              }
+              onToggleWishlist={(isActive) => onToggleWishlist(product.id, isActive)}
             />
           ))}
         </div>

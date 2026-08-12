@@ -11,10 +11,16 @@ import type { Product } from "@/data/product";
 
 type ProductCardProps = {
   product: Product;
+  quantity?: number;
+  onQuantityChange?: (nextQuantity: number) => void;
+  onToggleWishlist?: (isActive: boolean) => void;
 };
 
 export default function ProductCard({
   product,
+  quantity: initialQuantity = 0,
+  onQuantityChange,
+  onToggleWishlist,
 }: ProductCardProps) {
   const formatPrice = (price: number) =>
     `₹${price.toLocaleString("en-IN")}`;
@@ -33,11 +39,36 @@ export default function ProductCard({
       ? product.images
       : [product.image];
 
-  const [selectedImage, setSelectedImage] =
-    useState(0);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [quantity, setQuantity] = useState(initialQuantity);
 
   const activeImage =
     productImages[selectedImage] || product.image;
+
+  const handleWishlistToggle = () => {
+    setIsWishlisted((prev) => {
+      const nextValue = !prev;
+      onToggleWishlist?.(nextValue);
+      return nextValue;
+    });
+  };
+
+  const handleAddToCart = () => {
+    setQuantity((value) => {
+      const nextValue = value + 1;
+      onQuantityChange?.(nextValue);
+      return nextValue;
+    });
+  };
+
+  const handleQuantityChange = (delta: number) => {
+    setQuantity((value) => {
+      const nextValue = Math.max(0, value + delta);
+      onQuantityChange?.(nextValue);
+      return nextValue;
+    });
+  };
 
   return (
     <article
@@ -322,62 +353,90 @@ export default function ProductCard({
         >
           {/* Add To Cart */}
 
-          <button
-            type="button"
-            aria-label={`Add ${product.name} to cart`}
-            className="
-              flex
-              h-[38px]
-              flex-1
-              items-center
-              justify-center
-              gap-2
-              rounded-[7px]
-              bg-[#182235]
-              px-3
-              text-[10px]
-              font-bold
-              uppercase
-              tracking-[0.02em]
-              text-white
-              transition-colors
-              duration-200
-              hover:bg-[#101827]
-              active:scale-[0.98]
-            "
-          >
-            <ShoppingCart
-              size={14}
-              strokeWidth={1.8}
-            />
+          {quantity > 0 ? (
+            <div className="flex h-[38px] flex-1 items-center justify-between overflow-hidden rounded-[7px] bg-white px-1 text-[#182235] shadow-sm">
+              <button
+                type="button"
+                aria-label={`Decrease quantity for ${product.name}`}
+                onClick={() => handleQuantityChange(-1)}
+                className="flex h-full w-9 items-center justify-center rounded-[5px] bg-[#182235] text-lg font-bold text-white transition hover:brightness-110"
+              >
+                −
+              </button>
 
-            Add to Cart
-          </button>
+              <span className="min-w-0 flex-1 text-center text-base font-extrabold uppercase tracking-[0.04em] text-[#182235]">
+                {quantity}
+              </span>
+
+              <button
+                type="button"
+                aria-label={`Increase quantity for ${product.name}`}
+                onClick={() => handleQuantityChange(1)}
+                className="flex h-full w-9 items-center justify-center rounded-[5px] bg-[#182235] text-lg font-bold text-white transition hover:brightness-110"
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              aria-label={`Add ${product.name} to cart`}
+              onClick={handleAddToCart}
+              className="
+                flex
+                h-[38px]
+                flex-1
+                items-center
+                justify-center
+                gap-2
+                rounded-[7px]
+                bg-[#182235]
+                px-3
+                text-[10px]
+                font-bold
+                uppercase
+                tracking-[0.02em]
+                text-white
+                transition-colors
+                duration-200
+                hover:bg-[#101827]
+                active:scale-[0.98]
+              "
+            >
+              <ShoppingCart
+                size={14}
+                strokeWidth={1.8}
+              />
+
+              Add to Cart
+            </button>
+          )}
 
           {/* Wishlist */}
 
           <button
             type="button"
             aria-label={`Wishlist ${product.name}`}
-            className="
+            onClick={handleWishlistToggle}
+            className={`
               grid
               size-[38px]
               shrink-0
               place-items-center
               rounded-[7px]
               border
-              border-[#dce0e4]
-              bg-white
-              text-[#ff8618]
               transition-all
               duration-200
-              hover:border-[#ff8618]
-              hover:bg-[#fff7ef]
-            "
+              ${
+                isWishlisted
+                  ? "border-[#ff8618] bg-[#fff7ef] text-[#ff8618]"
+                  : "border-[#dce0e4] bg-white text-[#ff8618] hover:border-[#ff8618] hover:bg-[#fff7ef]"
+              }
+            `}
           >
             <Heart
               size={17}
-              fill="currentColor"
+              fill={isWishlisted ? "currentColor" : "none"}
               strokeWidth={1.8}
             />
           </button>

@@ -4,19 +4,19 @@ const footerLinks = {
   Shop: [
     { label: "All Products", href: "#shop" },
     { label: "New Arrivals", href: "#new" },
-    { label: "Deals", href: "#deals" },
+    { label: "Deals", href: "#shop" },
     { label: "Categories", href: "#categories" },
   ],
   Company: [
-    { label: "About Sellexa", href: "#" },
-    { label: "Contact Us", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Support", href: "#" },
+    { label: "About Sellexa", href: "#shop" },
+    { label: "Contact Us", href: "#new" },
+    { label: "Careers", href: "#shop" },
+    { label: "Support", href: "#shop" },
   ],
   Legal: [
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms & Conditions", href: "#" },
-    { label: "Refund Policy", href: "#" },
+    { label: "Privacy Policy", href: "#shop" },
+    { label: "Terms & Conditions", href: "#shop" },
+    { label: "Refund Policy", href: "#shop" },
   ],
 };
 
@@ -29,7 +29,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <a
-              href="#"
+              href="/"
               className="inline-flex items-center gap-2 text-sm font-black tracking-[-0.04em] text-zinc-950"
             >
               <span className="grid size-8 place-items-center rounded-[9px] bg-[#171a18] text-white">
@@ -45,7 +45,7 @@ export default function Footer() {
             </p>
 
             <a
-              href="#"
+              href="#shop"
               className="mt-5 inline-flex items-center gap-1 text-[10px] font-bold text-zinc-800 transition hover:text-zinc-500"
             >
               Explore Sellexa
