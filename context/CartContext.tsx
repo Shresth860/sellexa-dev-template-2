@@ -19,6 +19,8 @@ interface CartContextType {
   wishlistCount: number;
   addToCart: (productId: number, quantity?: number) => void;
   updateCartQuantity: (productId: number, nextQuantity: number) => void;
+  removeFromCart: (productId: number) => void;
+  clearCart: () => void;
   toggleWishlist: (productId: number, isActive?: boolean) => void;
 }
 
@@ -41,27 +43,30 @@ function readStorage<T>(key: string, fallback: T): T {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItems>(() =>
-    readStorage<CartItems>(CART_STORAGE_KEY, {})
-  );
-  const [wishlistItems, setWishlistItems] = useState<WishlistItems>(() =>
-    readStorage<WishlistItems>(WISHLIST_STORAGE_KEY, {})
-  );
+  const [cartItems, setCartItems] = useState<CartItems>({});
+  const [wishlistItems, setWishlistItems] = useState<WishlistItems>({});
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    setCartItems(readStorage<CartItems>(CART_STORAGE_KEY, {}));
+    setWishlistItems(readStorage<WishlistItems>(WISHLIST_STORAGE_KEY, {}));
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (isHydrated) {
       window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
     }
-  }, [cartItems]);
+  }, [cartItems, isHydrated]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (isHydrated) {
       window.localStorage.setItem(
         WISHLIST_STORAGE_KEY,
         JSON.stringify(wishlistItems)
       );
     }
-  }, [wishlistItems]);
+  }, [wishlistItems, isHydrated]);
 
   const cartCount = useMemo(
     () => Object.values(cartItems).reduce((total, quantity) => total + quantity, 0),
@@ -103,6 +108,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const removeFromCart = (productId: number) => {
+    updateCartQuantity(productId, 0);
+  };
+
+  const clearCart = () => {
+    setCartItems({});
+  };
+
   const toggleWishlist = (productId: number, isActive = true) => {
     setWishlistItems((prev) => {
       const next = { ...prev };
@@ -126,6 +139,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         wishlistCount,
         addToCart,
         updateCartQuantity,
+        removeFromCart,
+        clearCart,
         toggleWishlist,
       }}
     >

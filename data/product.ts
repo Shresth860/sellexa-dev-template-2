@@ -10,6 +10,8 @@ export type Product = {
   keywords?: string[];
   image: string;
   images?: string[];
+  color?: string;
+  inStock?: boolean;
 };
 
 export const categories = [
@@ -34,6 +36,7 @@ export const products: Product[] = [
     rating: 4.8,
     reviews: 312,
     badge: "Best Seller",
+    color: "Titanium Gray",
     keywords: [
       "phone",
       "phones",
@@ -60,6 +63,7 @@ export const products: Product[] = [
     rating: 4.7,
     reviews: 186,
     badge: "Popular",
+    color: "Blue",
     keywords: [
       "headphones",
       "headphone",
@@ -84,6 +88,7 @@ export const products: Product[] = [
     price: 18999,
     rating: 4.6,
     reviews: 94,
+    color: "Black",
     keywords: [
       "watch",
       "smartwatch",
@@ -110,6 +115,7 @@ export const products: Product[] = [
     rating: 4.7,
     reviews: 128,
     badge: "New",
+    color: "White",
     keywords: [
       "shoes",
       "sneakers",
@@ -134,6 +140,7 @@ export const products: Product[] = [
     price: 45999,
     rating: 4.8,
     reviews: 76,
+    color: "Black",
     keywords: [
       "camera",
       "dslr",
@@ -161,6 +168,7 @@ export const products: Product[] = [
     rating: 4.9,
     reviews: 58,
     badge: "Top Rated",
+    color: "Silver",
     keywords: [
       "laptop",
       "notebook",
@@ -186,6 +194,7 @@ export const products: Product[] = [
     oldPrice: 10999,
     rating: 4.6,
     reviews: 72,
+    color: "Walnut Brown",
     keywords: [
       "chair",
       "furniture",
