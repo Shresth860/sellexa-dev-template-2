@@ -247,14 +247,13 @@ export default function Header({
               </span>
             </Link>
           ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal("login")}
+            <Link
+              href="/auth/login"
               className="hidden h-11 shrink-0 items-center gap-2 rounded-full bg-[#171a18] text-white px-5 text-xs font-semibold transition hover:bg-zinc-800 sm:flex cursor-pointer shadow-xs"
             >
               <User width={15} height={15} />
               <span>Login / Sign Up</span>
-            </button>
+            </Link>
           )}
 
           {/* Mobile Menu */}

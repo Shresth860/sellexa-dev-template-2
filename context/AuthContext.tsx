@@ -144,9 +144,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const openAuthModal = (view: "login" | "signup" = "login") => {
     setAuthModalView(view);
-    setIsAuthModalOpen(true);
+    setIsAuthModalOpen(false);
 
-    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth/")) {
+    if (typeof window !== "undefined") {
       router.push(`/auth/${view}`);
     }
   };
