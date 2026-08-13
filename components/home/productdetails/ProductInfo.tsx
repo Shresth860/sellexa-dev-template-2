@@ -10,16 +10,15 @@ import {
   Truck,
 } from "lucide-react";
 
-import { useCart } from "@/context/CartContext";
 import type { Product } from "@/data/product";
+import { addToCartCount } from "@/lib/cartCount";
 
 type ProductInfoProps = {
   product: Product;
 };
 
 export default function ProductInfo({ product }: ProductInfoProps) {
-  const { addToCart, cartItems, toggleWishlist, updateCartQuantity } = useCart();
-  const cartQuantity = cartItems[product.id] ?? 0;
+  const cartQuantity = 0;
   const [quantity, setQuantity] = useState(cartQuantity > 0 ? cartQuantity : 1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddedToCart, setIsAddedToCart] = useState(cartQuantity > 0);
@@ -47,8 +46,28 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     "Fast shipping and easy returns across India",
   ];
 
+  const specifications = [
+    { label: "Material", value: "Premium alloy / high-grade fabric / certified material" },
+    { label: "Color", value: "Midnight Black / Sand Beige / Alpine Silver" },
+    { label: "Warranty", value: "12-month manufacturer warranty" },
+    { label: "Delivery", value: "Dispatch within 24 hours across India" },
+  ];
+
+  const reviews = [
+    {
+      name: "Aarav S.",
+      rating: 5,
+      text: "Great quality and finish. The product feels premium and looks exactly as shown.",
+    },
+    {
+      name: "Meher P.",
+      rating: 4,
+      text: "Shipping was quick and the packaging was excellent. Very happy with the value.",
+    },
+  ];
+
   return (
-    <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:p-8">
+    <div className="flex w-full flex-col rounded-[28px] border border-zinc-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:p-8">
       <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500">
         <span>{product.category}</span>
         {discount && <span className="rounded-full bg-[#fff1e5] px-2 py-1 text-[#ff8a1f]">{discount}% OFF</span>}
@@ -89,11 +108,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             type="button"
             aria-label="Decrease quantity"
             onClick={() => {
-              const nextValue = Math.max(1, quantity - 1);
-              setQuantity(nextValue);
-              if (cartQuantity > 0) {
-                updateCartQuantity(product.id, nextValue);
-              }
+              setQuantity((current) => Math.max(1, current - 1));
             }}
             className="flex h-full w-12 items-center justify-center bg-zinc-900 text-xl font-semibold text-white"
           >
@@ -108,11 +123,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             type="button"
             aria-label="Increase quantity"
             onClick={() => {
-              const nextValue = quantity + 1;
-              setQuantity(nextValue);
-              if (cartQuantity > 0) {
-                updateCartQuantity(product.id, nextValue);
-              }
+              setQuantity((current) => current + 1);
             }}
             className="flex h-full w-12 items-center justify-center bg-zinc-900 text-xl font-semibold text-white"
           >
@@ -123,13 +134,8 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         <button
           type="button"
           onClick={() => {
-            const nextTotal = cartQuantity > 0 ? quantity : cartQuantity + quantity;
-            if (cartQuantity > 0) {
-              updateCartQuantity(product.id, nextTotal);
-            } else {
-              addToCart(product.id, quantity);
-            }
             setIsAddedToCart(true);
+            addToCartCount(quantity);
           }}
           className={`flex flex-1 items-center justify-center gap-2 rounded-[16px] px-5 py-3 text-sm font-bold uppercase tracking-[0.08em] text-white transition ${
             isAddedToCart ? "bg-[#ff8a1f] hover:bg-[#e37b15]" : "bg-[#171a18] hover:bg-[#090b0b]"
@@ -144,9 +150,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         <button
           type="button"
           onClick={() => {
-            const nextValue = !isWishlisted;
-            setIsWishlisted(nextValue);
-            toggleWishlist(product.id, nextValue);
+            setIsWishlisted((value) => !value);
           }}
           className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
             isWishlisted
@@ -155,15 +159,8 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           }`}
         >
           <Heart size={16} fill={isWishlisted ? "currentColor" : "none"} />
-          {isWishlisted ? "Saved" : "Save for later"}
+          {isWishlisted ? "Wishlist" : "Wishlist"}
         </button>
-
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-100"
-        >
-          Continue shopping
-        </Link>
       </div>
 
       <div className="mt-8 space-y-3 rounded-[22px] border border-zinc-200 bg-[#f9faf7] p-4">
@@ -191,6 +188,45 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             </li>
           ))}
         </ul>
+      </div>
+
+      <div className="mt-10 grid gap-6 lg:grid-cols-2">
+        <div className="rounded-[24px] border border-zinc-200 bg-zinc-50 p-5">
+          <h3 className="text-lg font-extrabold tracking-[-0.04em] text-zinc-900">
+            Specifications
+          </h3>
+
+          <dl className="mt-4 space-y-3">
+            {specifications.map((item) => (
+              <div key={item.label} className="flex gap-4 border-b border-zinc-200 pb-3 last:border-b-0 last:pb-0">
+                <dt className="w-24 shrink-0 text-sm font-semibold text-zinc-500">{item.label}</dt>
+                <dd className="text-sm leading-6 text-zinc-700">{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div className="rounded-[24px] border border-zinc-200 bg-zinc-50 p-5">
+          <h3 className="text-lg font-extrabold tracking-[-0.04em] text-zinc-900">
+            Reviews
+          </h3>
+
+          <div className="mt-4 space-y-4">
+            {reviews.map((review) => (
+              <div key={review.name} className="rounded-2xl border border-zinc-200 bg-white p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-semibold text-zinc-900">{review.name}</span>
+                  <span className="flex items-center gap-1 text-[#f59b38]">
+                    {Array.from({ length: review.rating }).map((_, index) => (
+                      <Star key={`${review.name}-${index}`} size={12} fill="currentColor" />
+                    ))}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-zinc-600">{review.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
