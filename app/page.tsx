@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import AnnouncementBar from "@/components/home/AnnouncementBar";
 import Header from "@/components/home/Header";
@@ -10,15 +10,26 @@ import ProductSection from "@/components/home/ProductSection";
 import SellexaDifference from "@/components/home/SellexaDifference";
 import Newsletter from "@/components/home/Newsletter";
 import Footer from "@/components/home/Footer";
-import { useCart } from "@/context/CartContext";
 
 import { products } from "@/data/product";
+import { getCartCount } from "@/lib/cartCount";
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [sortBy, setSortBy] = useState("Popular");
-  const { cartItems, wishlistItems, cartCount, wishlistCount, updateCartQuantity, toggleWishlist } = useCart();
+  const [cartCount, setCartCount] = useState(getCartCount());
+
+  useEffect(() => {
+    const updateCount = () => setCartCount(getCartCount());
+
+    updateCount();
+    window.addEventListener("sellexa-cart-count-changed", updateCount);
+
+    return () => {
+      window.removeEventListener("sellexa-cart-count-changed", updateCount);
+    };
+  }, []);
 
   const filteredProducts = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -64,12 +75,12 @@ export default function Home() {
     }
   }, [filteredProducts, sortBy]);
 
-  const handleCartQuantityChange = (productId: number, nextQuantity: number) => {
-    updateCartQuantity(productId, nextQuantity);
+  const handleCartQuantityChange = (_productId: number, _nextQuantity: number) => {
+    // cart logic removed
   };
 
-  const handleToggleWishlist = (productId: number, isActive: boolean) => {
-    toggleWishlist(productId, isActive);
+  const handleToggleWishlist = (_productId: number, _isActive: boolean) => {
+    // wishlist logic removed
   };
 
   return (
@@ -82,7 +93,7 @@ export default function Home() {
         products={products}
         setActiveCategory={setActiveCategory}
         cartCount={cartCount}
-        wishlistCount={wishlistCount}
+        wishlistCount={0}
       />
 
       <Hero />

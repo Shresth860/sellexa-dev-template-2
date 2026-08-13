@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import Footer from "@/components/home/Footer";
 import Header from "@/components/home/Header";
-import { useCart } from "@/context/CartContext";
 import { products as allProducts, type Product } from "@/data/product";
+
+import { getCartCount } from "@/lib/cartCount";
 
 import ProductGallery from "./ProductGallery";
 import ProductInfo from "./ProductInfo";
@@ -20,7 +22,16 @@ export default function ProductDetailPage({
   product,
   relatedProducts,
 }: ProductDetailPageProps) {
-  const { cartCount, wishlistCount } = useCart();
+  const [cartCount, setCartCount] = useState(getCartCount());
+
+  useEffect(() => {
+    const updateCount = () => setCartCount(getCartCount());
+
+    updateCount();
+    window.addEventListener("sellexa-cart-count-changed", updateCount);
+
+    return () => window.removeEventListener("sellexa-cart-count-changed", updateCount);
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#f5f6f3] text-zinc-900">
@@ -30,7 +41,7 @@ export default function ProductDetailPage({
         products={allProducts}
         setActiveCategory={() => {}}
         cartCount={cartCount}
-        wishlistCount={wishlistCount}
+        wishlistCount={0}
         showBackHome
         backHomeHref="/"
       />
@@ -44,9 +55,13 @@ export default function ProductDetailPage({
           <span className="text-zinc-900">{product.name}</span>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-          <ProductGallery product={product} />
-          <ProductInfo product={product} />
+        <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr] xl:items-start">
+          <div className="self-start xl:sticky xl:top-24">
+            <ProductGallery product={product} />
+          </div>
+          <div className="self-start">
+            <ProductInfo product={product} />
+          </div>
         </div>
       </section>
 
