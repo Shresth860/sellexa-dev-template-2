@@ -10,12 +10,15 @@ import ProductSection from "@/components/home/ProductSection";
 import SellexaDifference from "@/components/home/SellexaDifference";
 import Newsletter from "@/components/home/Newsletter";
 import Footer from "@/components/home/Footer";
+import { useCart } from "@/context/CartContext";
 
 import { products } from "@/data/product";
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("Popular");
+  const { cartItems, wishlistItems, cartCount, wishlistCount, updateCartQuantity, toggleWishlist } = useCart();
 
   const filteredProducts = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -41,9 +44,33 @@ export default function Home() {
 
       const searchMatch = !search || normalizedValues.includes(search);
 
-      return searchMatch && (search ? true : categoryMatch);
+      return searchMatch && categoryMatch;
     });
   }, [query, activeCategory]);
+
+  const sortedProducts = useMemo(() => {
+    const nextProducts = [...filteredProducts];
+
+    switch (sortBy) {
+      case "Price: Low to High":
+        return nextProducts.sort((a, b) => a.price - b.price);
+      case "Price: High to Low":
+        return nextProducts.sort((a, b) => b.price - a.price);
+      case "Newest":
+        return nextProducts.sort((a, b) => b.id - a.id);
+      case "Popular":
+      default:
+        return nextProducts.sort((a, b) => b.rating * b.reviews - a.rating * a.reviews);
+    }
+  }, [filteredProducts, sortBy]);
+
+  const handleCartQuantityChange = (productId: number, nextQuantity: number) => {
+    updateCartQuantity(productId, nextQuantity);
+  };
+
+  const handleToggleWishlist = (productId: number, isActive: boolean) => {
+    toggleWishlist(productId, isActive);
+  };
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f5f6f3] text-[#171918]">
@@ -54,6 +81,8 @@ export default function Home() {
         setQuery={setQuery}
         products={products}
         setActiveCategory={setActiveCategory}
+        cartCount={cartCount}
+        wishlistCount={wishlistCount}
       />
 
       <Hero />
@@ -64,11 +93,15 @@ export default function Home() {
       />
 
       <ProductSection
-        products={filteredProducts}
+        products={sortedProducts}
         query={query}
         activeCategory={activeCategory}
         setQuery={setQuery}
         setActiveCategory={setActiveCategory}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        onCartQuantityChange={handleCartQuantityChange}
+        onToggleWishlist={handleToggleWishlist}
       />
 
       <SellexaDifference />

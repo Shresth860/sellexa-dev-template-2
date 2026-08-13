@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { CartProvider } from "@/context/CartContext";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -23,9 +25,15 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${manrope.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="h-full">
-        <AuthProvider>{children}</AuthProvider>
+      <body className="h-full" suppressHydrationWarning>
+        <AuthProvider>
+          <CartProvider>
+            {children}
+            <AuthModal />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

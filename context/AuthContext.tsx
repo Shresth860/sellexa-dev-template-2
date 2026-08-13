@@ -144,12 +144,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const openAuthModal = (view: "login" | "signup" = "login") => {
     setAuthModalView(view);
-    router.push(`/auth/${view}`);
+    setIsAuthModalOpen(true);
+
+    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth/")) {
+      router.push(`/auth/${view}`);
+    }
   };
 
   const closeAuthModal = () => {
     setIsAuthModalOpen(false);
     setPendingContact("");
+
+    if (typeof window !== "undefined" && window.location.pathname.startsWith("/auth/")) {
+      router.push("/");
+    }
   };
 
   const loginWithOtp = async (otpCode: string): Promise<boolean> => {

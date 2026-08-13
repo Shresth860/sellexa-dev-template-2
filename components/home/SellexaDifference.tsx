@@ -50,12 +50,12 @@ export default function SellexaDifference() {
             key={feature.number}
             className="grid grid-cols-[35px_1fr] gap-3 border-b border-zinc-700 py-5 last:border-0"
           >
-            <span className="text-[9px] text-zinc-500">
+            <span className="text-[22px] text-zinc-500">
               {feature.number}
             </span>
 
             <div>
-              <strong className="text-xs">
+              <strong className="text-sm font-extrabold uppercase tracking-[0.12em] text-white">
                 {feature.title}
               </strong>
 

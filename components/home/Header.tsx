@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import {
-  Heart,
+  Heart, 
   Menu,
   Search,
   ShoppingBag,
   User,
   X,
 } from "lucide-react";
-
 import type { Product } from "@/data/product";
 
 type HeaderProps = {
@@ -19,6 +19,10 @@ type HeaderProps = {
   setQuery: (value: string) => void;
   products: Product[];
   setActiveCategory: (category: string) => void;
+  cartCount: number;
+  wishlistCount: number;
+  showBackHome?: boolean;
+  backHomeHref?: string;
 };
 
 export default function Header({
@@ -26,8 +30,16 @@ export default function Header({
   setQuery,
   products,
   setActiveCategory,
+  cartCount,
+  wishlistCount,
+  showBackHome = false,
+  backHomeHref = "/",
 }: HeaderProps) {
   const [mobileMenu, setMobileMenu] = useState(false);
+
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const router = useRouter();
+
   const { user, openAuthModal } = useAuth();
 
   const suggestions = query
@@ -61,6 +73,16 @@ export default function Header({
         .toUpperCase()
     : "U";
 
+
+  const handleCartNavigation = () => {
+    router.push("/cart");
+  };
+
+  const handleWishlistNavigation = () => {
+    router.push("/wishlist");
+  };
+
+
   return (
     <header className="mx-auto mt-3 w-[calc(100%-28px)] max-w-[1720px] ">
       {/* Main Header */}
@@ -90,6 +112,7 @@ export default function Header({
             />
 
             <input
+              ref={searchInputRef}
               type="text"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -112,6 +135,7 @@ export default function Header({
             ) : (
               <button
                 type="button"
+                onClick={() => searchInputRef.current?.focus()}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#171a18] text-white"
                 aria-label="Search"
               >
@@ -158,6 +182,7 @@ export default function Header({
           <button
             type="button"
             aria-label="Shopping cart"
+            onClick={handleCartNavigation}
             className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white p-0 text-zinc-900 transition hover:border-zinc-300 hover:bg-zinc-50"
           >
             <ShoppingBag
@@ -166,27 +191,44 @@ export default function Header({
               strokeWidth={1.8}
             />
 
-            <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
-              2
-            </span>
+            {cartCount > 0 && (
+              <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                {cartCount}
+              </span>
+            )}
           </button>
 
           {/* Wishlist */}
           <button
             type="button"
             aria-label="Wishlist"
+            onClick={handleWishlistNavigation}
             className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white p-0 text-zinc-900 transition hover:border-zinc-300 hover:bg-zinc-50"
           >
             <Heart
               width={19}
               height={19}
+              fill="none"
               strokeWidth={1.8}
             />
 
-            <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
-              2
-            </span>
+            {wishlistCount > 0 && (
+              <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                {wishlistCount}
+              </span>
+            )}
           </button>
+
+
+          {showBackHome && (
+            <button
+              type="button"
+              onClick={() => router.push(backHomeHref)}
+              className="hidden h-12 shrink-0 items-center rounded-full border border-zinc-200 bg-zinc-50 px-4 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-100 sm:flex"
+            >
+              Back to home
+            </button>
+          )}
 
           {/* User Profile Link or Login Button */}
           {user ? (
@@ -198,6 +240,7 @@ export default function Header({
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#171a18] text-[11px] font-bold text-white ring-1 ring-zinc-200">
                 {userInitials}
               </span>
+
 
               <span className="hidden whitespace-nowrap text-[11px] font-semibold text-zinc-800 md:block">
                 {userDisplayName}

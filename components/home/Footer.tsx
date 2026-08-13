@@ -4,19 +4,19 @@ const footerLinks = {
   Shop: [
     { label: "All Products", href: "#shop" },
     { label: "New Arrivals", href: "#new" },
-    { label: "Deals", href: "#deals" },
+    { label: "Deals", href: "#shop" },
     { label: "Categories", href: "#categories" },
   ],
   Company: [
-    { label: "About Sellexa", href: "#" },
-    { label: "Contact Us", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Support", href: "#" },
+    { label: "About Sellexa", href: "#shop" },
+    { label: "Contact Us", href: "#new" },
+    { label: "Careers", href: "#shop" },
+    { label: "Support", href: "#shop" },
   ],
   Legal: [
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms & Conditions", href: "#" },
-    { label: "Refund Policy", href: "#" },
+    { label: "Privacy Policy", href: "#shop" },
+    { label: "Terms & Conditions", href: "#shop" },
+    { label: "Refund Policy", href: "#shop" },
   ],
 };
 
@@ -29,8 +29,8 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <a
-              href="#"
-              className="inline-flex items-center gap-2 text-sm font-black tracking-[-0.04em] text-zinc-950"
+              href="/"
+              className="inline-flex items-center gap-2 text-xl font-black tracking-[-0.04em] text-zinc-950"
             >
               <span className="grid size-8 place-items-center rounded-[9px] bg-[#171a18] text-white">
                 S
@@ -39,13 +39,13 @@ export default function Footer() {
               SELLEXA
             </a>
 
-            <p className="mt-5 max-w-xs text-xs leading-6 text-zinc-500">
+            <p className="mt-5 max-w-xs text-sm leading-6 text-zinc-500">
               Discover better products, better prices, and a
               better way to shop.
             </p>
 
             <a
-              href="#"
+              href="#shop"
               className="mt-5 inline-flex items-center gap-1 text-[10px] font-bold text-zinc-800 transition hover:text-zinc-500"
             >
               Explore Sellexa
@@ -57,7 +57,7 @@ export default function Footer() {
           {Object.entries(footerLinks).map(
             ([title, links]) => (
               <div key={title}>
-                <h3 className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-zinc-900">
+                <h3 className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-zinc-900">
                   {title}
                 </h3>
 
@@ -66,7 +66,7 @@ export default function Footer() {
                     <a
                       key={link.label}
                       href={link.href}
-                      className="w-fit text-[11px] text-zinc-500 transition hover:text-zinc-950"
+                      className="w-fit text-[12px] text-zinc-500 transition hover:text-zinc-950"
                     >
                       {link.label}
                     </a>
@@ -78,12 +78,12 @@ export default function Footer() {
         </div>
 
         {/* Bottom Footer */}
-        <div className="flex flex-col gap-4 border-t border-zinc-200 py-6 text-[10px] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-t border-zinc-200 py-6 text-[12px] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
           <span>
             © 2026 Sellexa. All rights reserved.
           </span>
 
-          <span>
+          <span >
             Made for smarter shopping.
           </span>
         </div>
