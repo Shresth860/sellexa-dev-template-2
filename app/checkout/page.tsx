@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 import { products } from "@/data/product";
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const searchParams = useSearchParams();
   const productId = Number(searchParams.get("productId") ?? "0");
 
@@ -129,5 +129,19 @@ export default function CheckoutPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#f5f6f3] flex items-center justify-center">
+          <div className="text-zinc-500 font-medium">Loading checkout...</div>
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   );
 }

@@ -27,9 +27,16 @@ export default function ProfileLayout({
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("Profile updated successfully!");
 
-  const activeTab: "personal" | "addresses" = pathname.includes("/profile/address")
-    ? "addresses"
-    : "personal";
+  let activeTab: "personal" | "addresses" | "coupons" | "wishlist" | "notifications" = "personal";
+  if (pathname.includes("/profile/address")) {
+    activeTab = "addresses";
+  } else if (pathname.includes("/profile/coupons")) {
+    activeTab = "coupons";
+  } else if (pathname.includes("/profile/wishlist")) {
+    activeTab = "wishlist";
+  } else if (pathname.includes("/profile/notifications")) {
+    activeTab = "notifications";
+  }
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);

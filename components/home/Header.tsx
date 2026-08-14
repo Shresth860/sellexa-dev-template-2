@@ -82,7 +82,7 @@ export default function Header({
   };
 
   const handleWishlistNavigation = () => {
-    router.push("/wishlist");
+    router.push("/profile/wishlist");
   };
 
   return (
