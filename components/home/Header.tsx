@@ -82,7 +82,7 @@ export default function Header({
   };
 
   const handleCartNavigation = () => {
-    router.push("/");
+    router.push("/cart");
   };
 
   return (
