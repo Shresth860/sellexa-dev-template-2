@@ -1,9 +1,9 @@
-import Link from "next/link";
-import { ArrowLeft, Headset, RotateCcw, ShieldCheck } from "lucide-react";
+import { Headset, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 
 const trustPoints = [
-  { icon: ShieldCheck, title: "Secure Checkout", description: "100% Protected" },
-  { icon: RotateCcw, title: "Easy Returns", description: "7-Day Return" },
+  { icon: Truck, title: "Free Delivery", description: "On orders above ₹499" },
+  { icon: ShieldCheck, title: "Secure Payments", description: "100% protected payments" },
+  { icon: RotateCcw, title: "Easy Returns", description: "7-day return policy" },
   { icon: Headset, title: "24/7 Support", description: "We're here to help" },
 ];
 
@@ -20,14 +20,6 @@ export default function CartTrustBar() {
           </div>
         </div>
       ))}
-
-      <Link
-        href="/"
-        className="flex min-w-0 items-center gap-1.5 text-[10px] font-semibold text-zinc-700 transition hover:text-zinc-950 sm:gap-2 sm:text-xs"
-      >
-        <ArrowLeft size={14} className="shrink-0 text-zinc-500 sm:size-4" />
-        <span className="truncate">Continue Shopping</span>
-      </Link>
     </div>
   );
 }
