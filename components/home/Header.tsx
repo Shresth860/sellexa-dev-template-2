@@ -116,12 +116,12 @@ export default function Header({
         .toUpperCase()
     : "U";
 
-  const handleWishlistNavigation = () => {
-    router.push("/wishlist");
-  };
-
   const handleCartNavigation = () => {
     router.push("/cart");
+  };
+
+  const handleWishlistNavigation = () => {
+    router.push("/profile/wishlist");
   };
 
   return (
