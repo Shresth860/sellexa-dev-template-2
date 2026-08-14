@@ -9,21 +9,19 @@ import {
 } from "lucide-react";
 
 import type { Product } from "@/data/product";
-import { addToCartCount } from "@/lib/cartCount";
+import { useCart } from "@/context/CartContext";
 
 type ProductCardProps = {
   product: Product;
-  quantity?: number;
-  onQuantityChange?: (nextQuantity: number) => void;
   onToggleWishlist?: (isActive: boolean) => void;
 };
 
 export default function ProductCard({
   product,
-  quantity: initialQuantity = 0,
-  onQuantityChange,
   onToggleWishlist,
 }: ProductCardProps) {
+  const { cartItems, addToCart, updateCartQuantity } = useCart();
+  const quantity = cartItems[product.id] ?? 0;
   const formatPrice = (price: number) =>
     `₹${price.toLocaleString("en-IN")}`;
 
@@ -43,7 +41,6 @@ export default function ProductCard({
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [quantity, setQuantity] = useState(initialQuantity);
 
   const activeImage =
     productImages[selectedImage] || product.image;
@@ -55,26 +52,11 @@ export default function ProductCard({
   };
 
   const handleAddToCart = () => {
-    const nextValue = quantity + 1;
-    setQuantity(nextValue);
-    onQuantityChange?.(nextValue);
-    addToCartCount(1);
+    addToCart(product.id, 1);
   };
 
   const handleQuantityChange = (delta: number) => {
-    const nextValue = Math.max(0, quantity + delta);
-    const previousValue = quantity;
-
-    setQuantity(nextValue);
-    onQuantityChange?.(nextValue);
-
-    if (delta > 0 && previousValue < nextValue) {
-      addToCartCount(delta);
-    }
-
-    if (delta < 0 && previousValue > nextValue) {
-      addToCartCount(delta);
-    }
+    updateCartQuantity(product.id, Math.max(0, quantity + delta));
   };
 
   return (

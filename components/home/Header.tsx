@@ -105,7 +105,7 @@ export default function Header({
         </Link>
 
         {/* Search */}
-        <div className="relative ml-2 w-full max-w-[330px] sm:ml-4">
+        <div className="relative ml-2 min-w-0 max-w-[200px] flex-1 sm:ml-4 sm:max-w-[330px]">
           <div className="flex h-[52px] w-full items-center rounded-[18px] bg-[#f5f6f3] px-3">
             <Search
               width={17}
