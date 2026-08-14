@@ -1,13 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 import Footer from "@/components/home/Footer";
 import Header from "@/components/home/Header";
 import { products as allProducts, type Product } from "@/data/product";
-
-import { getCartCount } from "@/lib/cartCount";
+import { useCart } from "@/context/CartContext";
 
 import ProductGallery from "./ProductGallery";
 import ProductInfo from "./ProductInfo";
@@ -22,16 +20,7 @@ export default function ProductDetailPage({
   product,
   relatedProducts,
 }: ProductDetailPageProps) {
-  const [cartCount, setCartCount] = useState(getCartCount());
-
-  useEffect(() => {
-    const updateCount = () => setCartCount(getCartCount());
-
-    updateCount();
-    window.addEventListener("sellexa-cart-count-changed", updateCount);
-
-    return () => window.removeEventListener("sellexa-cart-count-changed", updateCount);
-  }, []);
+  const { cartCount } = useCart();
 
   return (
     <main className="min-h-screen bg-[#f5f6f3] text-zinc-900">

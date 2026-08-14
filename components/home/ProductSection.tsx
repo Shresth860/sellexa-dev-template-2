@@ -15,7 +15,6 @@ type ProductSectionProps = {
   setActiveCategory: (category: string) => void;
   sortBy: string;
   setSortBy: (value: string) => void;
-  onCartQuantityChange: (productId: number, nextQuantity: number) => void;
   onToggleWishlist: (productId: number, isActive: boolean) => void;
 };
 
@@ -27,7 +26,6 @@ export default function ProductSection({
   setActiveCategory,
   sortBy,
   setSortBy,
-  onCartQuantityChange,
   onToggleWishlist,
 }: ProductSectionProps) {
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -139,10 +137,6 @@ export default function ProductSection({
             <ProductCard
               key={product.id}
               product={product}
-              quantity={0}
-              onQuantityChange={(nextQuantity) =>
-                onCartQuantityChange(product.id, nextQuantity)
-              }
               onToggleWishlist={(isActive) => onToggleWishlist(product.id, isActive)}
             />
           ))}

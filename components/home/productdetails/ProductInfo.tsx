@@ -11,14 +11,15 @@ import {
 } from "lucide-react";
 
 import type { Product } from "@/data/product";
-import { addToCartCount } from "@/lib/cartCount";
+import { useCart } from "@/context/CartContext";
 
 type ProductInfoProps = {
   product: Product;
 };
 
 export default function ProductInfo({ product }: ProductInfoProps) {
-  const cartQuantity = 0;
+  const { cartItems, addToCart, updateCartQuantity } = useCart();
+  const cartQuantity = cartItems[product.id] ?? 0;
   const [quantity, setQuantity] = useState(cartQuantity > 0 ? cartQuantity : 1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddedToCart, setIsAddedToCart] = useState(cartQuantity > 0);
@@ -135,7 +136,11 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           type="button"
           onClick={() => {
             setIsAddedToCart(true);
-            addToCartCount(quantity);
+            if (cartQuantity > 0) {
+              updateCartQuantity(product.id, quantity);
+            } else {
+              addToCart(product.id, quantity);
+            }
           }}
           className={`flex flex-1 items-center justify-center gap-2 rounded-[16px] px-5 py-3 text-sm font-bold uppercase tracking-[0.08em] text-white transition ${
             isAddedToCart ? "bg-[#ff8a1f] hover:bg-[#e37b15]" : "bg-[#171a18] hover:bg-[#090b0b]"
