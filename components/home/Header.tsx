@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import {
-  Heart,
+  Heart, 
   Menu,
   Search,
   ShoppingBag,
@@ -39,6 +39,7 @@ export default function Header({
   const [isHydrated, setIsHydrated] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
+
   const { user, openAuthModal } = useAuth();
 
   useEffect(() => {
@@ -82,6 +83,7 @@ export default function Header({
 
   const handleCartNavigation = () => {
     router.push("/");
+    router.push("/cart");
   };
 
   return (
@@ -219,6 +221,7 @@ export default function Header({
             )}
           </button>
 
+
           {showBackHome && (
             <button
               type="button"
@@ -240,19 +243,19 @@ export default function Header({
                 {userInitials}
               </span>
 
+
               <span className="hidden whitespace-nowrap text-[11px] font-semibold text-zinc-800 md:block">
                 {userDisplayName}
               </span>
             </Link>
           ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal("login")}
+            <Link
+              href="/auth/login"
               className="hidden h-11 shrink-0 items-center gap-2 rounded-full bg-[#171a18] text-white px-5 text-xs font-semibold transition hover:bg-zinc-800 sm:flex cursor-pointer shadow-xs"
             >
               <User width={15} height={15} />
               <span>Login / Sign Up</span>
-            </button>
+            </Link>
           )}
 
           {/* Mobile Menu */}
