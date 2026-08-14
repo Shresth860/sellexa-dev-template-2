@@ -12,28 +12,34 @@ import {
   User,
   X,
 } from "lucide-react";
-import type { Product } from "@/data/product";
+import { categories, type Product } from "@/data/product";
 
 type HeaderProps = {
   query: string;
   setQuery: (value: string) => void;
+  onSearchSubmit?: () => void;
   products: Product[];
   setActiveCategory: (category: string) => void;
   cartCount: number;
   wishlistCount: number;
   showBackHome?: boolean;
   backHomeHref?: string;
+  hideCart?: boolean;
+  hideWishlist?: boolean;
 };
 
 export default function Header({
   query,
   setQuery,
+  onSearchSubmit,
   products,
   setActiveCategory,
   cartCount,
   wishlistCount,
   showBackHome = false,
   backHomeHref = "/",
+  hideCart = false,
+  hideWishlist = false,
 }: HeaderProps) {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -46,25 +52,58 @@ export default function Header({
     setIsHydrated(true);
   }, []);
 
-  const suggestions = query
-    .trim()
-    .toLowerCase()
-    ? products
-        .filter((product) => {
-          const search = query.toLowerCase();
-          const searchable = [
-            product.name,
-            product.category,
-            product.badge || "",
-            ...(product.keywords || []),
-          ]
-            .join(" ")
-            .toLowerCase();
+  const searchValue = query.trim().toLowerCase();
 
-          return searchable.includes(search);
-        })
-        .slice(0, 5)
-    : [];
+  const categorySuggestions =
+    searchValue && categories.length > 0
+      ? categories
+          .filter(
+            (category) =>
+              category !== "All" && category.toLowerCase().includes(searchValue)
+          )
+          .slice(0, 1)
+      : [];
+
+  const productSuggestions =
+    searchValue
+      ? products
+          .filter((product) => {
+            const searchable = [
+              product.name,
+              product.category,
+              product.badge || "",
+              ...(product.keywords || []),
+            ]
+              .join(" ")
+              .toLowerCase();
+
+            return searchable.includes(searchValue);
+          })
+          .slice(0, 4)
+      : [];
+
+  const suggestions = [...categorySuggestions.map((category) => ({
+    type: "category" as const,
+    label: `Categories: ${category}`,
+    value: category,
+  })), ...productSuggestions.map((product) => ({
+    type: "product" as const,
+    label: product.name,
+    value: product.name,
+    category: product.category,
+    id: product.id,
+  }))];
+
+  const handleCategorySuggestionClick = (category: string) => {
+    setQuery("");
+    setActiveCategory(category);
+    router.push(`/search?category=${encodeURIComponent(category)}`);
+  };
+
+  const handleProductSuggestionClick = (productId: number) => {
+    setQuery("");
+    router.push(`/product/${productId}`);
+  };
 
   const userDisplayName = user ? (user.name || `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User") : "";
 
@@ -82,7 +121,6 @@ export default function Header({
   };
 
   const handleCartNavigation = () => {
-    router.push("/");
     router.push("/cart");
   };
 
@@ -106,71 +144,80 @@ export default function Header({
         </Link>
 
         {/* Search */}
-        <div className="relative ml-2 w-full max-w-[330px] sm:ml-4">
-          <div className="flex h-[52px] w-full items-center rounded-[18px] bg-[#f5f6f3] px-3">
-            <Search
-              width={17}
-              height={17}
-              className="shrink-0 text-zinc-500"
-            />
-
+        <div className="relative ml-2 w-full max-w-[420px] sm:ml-4">
+          <div className="group flex h-[56px] w-full items-center gap-2 rounded-[20px] border border-[#e7e5e4] bg-[linear-gradient(135deg,#fafaf9_0%,#f4f5f1_100%)] px-3 shadow-[0_10px_30px_rgba(23,25,24,0.06)] transition-all duration-200 focus-within:border-[#171a18] focus-within:shadow-[0_16px_40px_rgba(23,25,24,0.09)]">
             <input
               ref={searchInputRef}
               type="text"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  onSearchSubmit?.();
+                }
+              }}
               placeholder="Search products..."
-              className="min-w-0 flex-1 bg-transparent px-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400"
+              className="min-w-0 flex-1 border-0 bg-transparent px-1 text-sm font-medium text-zinc-900 outline-none placeholder:text-zinc-400"
             />
 
             {query ? (
               <button
                 type="button"
-                onClick={() => setQuery("")}
-                className="shrink-0 text-zinc-400 transition hover:text-zinc-900"
+                onClick={() => {
+                  setQuery("");
+                  onSearchSubmit?.();
+                }}
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-900"
                 aria-label="Clear search"
               >
-                <X
-                  width={15}
-                  height={15}
-                />
+                <X width={14} height={14} />
               </button>
             ) : (
               <button
                 type="button"
-                onClick={() => searchInputRef.current?.focus()}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#171a18] text-white"
+                onClick={() => {
+                  onSearchSubmit?.();
+                  searchInputRef.current?.focus();
+                }}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#171a18] text-white shadow-[0_10px_18px_rgba(23,25,24,0.22)] transition hover:bg-zinc-800"
                 aria-label="Search"
               >
-                <Search
-                  width={15}
-                  height={15}
-                />
+                <Search width={15} height={15} />
               </button>
             )}
           </div>
 
           {suggestions.length > 0 && (
-            <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg">
-              {suggestions.map((product) => (
-                <a
-                  key={product.id}
-                  href={`#product-${product.id}`}
-                  className="block border-b border-zinc-100 px-3 py-2 text-sm text-zinc-900 transition hover:bg-zinc-50"
-                  onClick={() => {
-                    setQuery(product.name);
-                    setActiveCategory(product.category);
-                  }}
-                >
-                  <span className="font-semibold">
-                    {product.name}
-                  </span>
-
-                  <span className="ml-2 text-xs text-zinc-500">
-                    {product.category}
-                  </span>
-                </a>
-              ))}
+            <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-[22px] border border-zinc-200 bg-white/95 shadow-[0_18px_40px_rgba(15,23,42,0.12)] backdrop-blur-sm">
+              {suggestions.map((suggestion) =>
+                suggestion.type === "category" ? (
+                  <button
+                    key={suggestion.value}
+                    type="button"
+                    className="block w-full border-b border-zinc-100 px-4 py-3 text-left text-sm text-zinc-900 transition hover:bg-zinc-50"
+                    onClick={() => {
+                      handleCategorySuggestionClick(suggestion.value);
+                    }}
+                  >
+                    <span className="font-semibold">{suggestion.label}</span>
+                  </button>
+                ) : (
+                  <button
+                    key={suggestion.id}
+                    type="button"
+                    className="block w-full border-b border-zinc-100 px-4 py-3 text-left text-sm text-zinc-900 transition hover:bg-zinc-50"
+                    onClick={() => {
+                      handleProductSuggestionClick(suggestion.id);
+                    }}
+                  >
+                    <span className="font-semibold">{suggestion.label}</span>
+                    <span className="ml-2 text-[11px] font-medium text-zinc-500">
+                      {suggestion.category}
+                    </span>
+                  </button>
+                )
+              )}
             </div>
           )}
         </div>
@@ -181,45 +228,48 @@ export default function Header({
         {/* Actions */}
         <div className="flex shrink-0 items-center gap-2">
 
-          <button
-            type="button"
-            aria-label="Shopping cart"
-            onClick={handleCartNavigation}
-            className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white p-0 text-zinc-900 transition hover:border-zinc-300 hover:bg-zinc-50"
-          >
-            <ShoppingBag
-              width={19}
-              height={19}
-              strokeWidth={1.8}
-            />
+          {!hideCart && (
+            <button
+              type="button"
+              aria-label="Shopping cart"
+              onClick={handleCartNavigation}
+              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white p-0 text-zinc-900 transition hover:border-zinc-300 hover:bg-zinc-50"
+            >
+              <ShoppingBag
+                width={19}
+                height={19}
+                strokeWidth={1.8}
+              />
 
-            {isHydrated && cartCount > 0 && (
-              <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
-                {cartCount}
-              </span>
-            )}
-          </button>
+              {isHydrated && cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          )}
 
-          {/* Wishlist */}
-          <button
-            type="button"
-            aria-label="Wishlist"
-            onClick={handleWishlistNavigation}
-            className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white p-0 text-zinc-900 transition hover:border-zinc-300 hover:bg-zinc-50"
-          >
-            <Heart
-              width={19}
-              height={19}
-              fill="none"
-              strokeWidth={1.8}
-            />
+          {!hideWishlist && (
+            <button
+              type="button"
+              aria-label="Wishlist"
+              onClick={handleWishlistNavigation}
+              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white p-0 text-zinc-900 transition hover:border-zinc-300 hover:bg-zinc-50"
+            >
+              <Heart
+                width={19}
+                height={19}
+                fill="none"
+                strokeWidth={1.8}
+              />
 
-            {isHydrated && wishlistCount > 0 && (
-              <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
-                {wishlistCount}
-              </span>
-            )}
-          </button>
+              {isHydrated && wishlistCount > 0 && (
+                <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                  {wishlistCount}
+                </span>
+              )}
+            </button>
+          )}
 
 
           {showBackHome && (
@@ -243,19 +293,26 @@ export default function Header({
                 {userInitials}
               </span>
 
-
               <span className="hidden whitespace-nowrap text-[11px] font-semibold text-zinc-800 md:block">
                 {userDisplayName}
               </span>
             </Link>
           ) : (
-            <Link
-              href="/auth/login"
-              className="hidden h-11 shrink-0 items-center gap-2 rounded-full bg-[#171a18] text-white px-5 text-xs font-semibold transition hover:bg-zinc-800 sm:flex cursor-pointer shadow-xs"
-            >
-              <User width={15} height={15} />
-              <span>Login / Sign Up</span>
-            </Link>
+            <div className="hidden items-center gap-2 sm:flex">
+              <Link
+                href="/auth/login"
+                className="flex h-11 shrink-0 items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 text-xs font-semibold text-zinc-800 transition hover:border-zinc-300 hover:bg-zinc-50"
+              >
+                <User width={15} height={15} />
+                <span>Login</span>
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="flex h-11 shrink-0 items-center rounded-full bg-[#171a18] px-4 text-xs font-semibold text-white transition hover:bg-zinc-800"
+              >
+                Sign Up
+              </Link>
+            </div>
           )}
 
           {/* Mobile Menu */}

@@ -48,24 +48,56 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    setCartItems(readStorage<CartItems>(CART_STORAGE_KEY, {}));
-    setWishlistItems(readStorage<WishlistItems>(WISHLIST_STORAGE_KEY, {}));
+    const syncFromStorage = () => {
+      const nextCartItems = readStorage<CartItems>(CART_STORAGE_KEY, {});
+      const nextWishlistItems = readStorage<WishlistItems>(WISHLIST_STORAGE_KEY, {});
+
+      setCartItems((current) => {
+        const currentValue = JSON.stringify(current);
+        const nextValue = JSON.stringify(nextCartItems);
+        return currentValue === nextValue ? current : nextCartItems;
+      });
+
+      setWishlistItems((current) => {
+        const currentValue = JSON.stringify(current);
+        const nextValue = JSON.stringify(nextWishlistItems);
+        return currentValue === nextValue ? current : nextWishlistItems;
+      });
+    };
+
+    syncFromStorage();
     setIsHydrated(true);
+
+    const handleStorage = (event: StorageEvent) => {
+      if (!event.key || event.key === CART_STORAGE_KEY || event.key === WISHLIST_STORAGE_KEY) {
+        syncFromStorage();
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+    };
   }, []);
 
   useEffect(() => {
-    if (isHydrated) {
-      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+    if (!isHydrated || typeof window === "undefined") {
+      return;
     }
+
+    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
   }, [cartItems, isHydrated]);
 
   useEffect(() => {
-    if (isHydrated) {
-      window.localStorage.setItem(
-        WISHLIST_STORAGE_KEY,
-        JSON.stringify(wishlistItems)
-      );
+    if (!isHydrated || typeof window === "undefined") {
+      return;
     }
+
+    window.localStorage.setItem(
+      WISHLIST_STORAGE_KEY,
+      JSON.stringify(wishlistItems)
+    );
   }, [wishlistItems, isHydrated]);
 
   const cartCount = useMemo(

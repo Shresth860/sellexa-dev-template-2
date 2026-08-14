@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
+import { useCart } from "@/context/CartContext";
 import AnnouncementBar from "@/components/home/AnnouncementBar";
 import Header from "@/components/home/Header";
 import Hero from "@/components/home/Hero";
@@ -11,69 +13,57 @@ import SellexaDifference from "@/components/home/SellexaDifference";
 import Newsletter from "@/components/home/Newsletter";
 import Footer from "@/components/home/Footer";
 
-import { products } from "@/data/product";
-import { getCartCount } from "@/lib/cartCount";
+import { categories, products } from "@/data/product";
 
 export default function Home() {
-  const [query, setQuery] = useState("");
+  const router = useRouter();
+  const { cartCount, wishlistCount } = useCart();
+  const [searchInput, setSearchInput] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [sortBy, setSortBy] = useState("Popular");
-  const [cartCount, setCartCount] = useState(getCartCount());
 
-  useEffect(() => {
-    const updateCount = () => setCartCount(getCartCount());
+  const handleSearchSubmit = () => {
+    const term = searchInput.trim();
+    const exactCategory =
+      categories.find(
+        (category) =>
+          category.toLowerCase() === term.toLowerCase() ||
+          category.toLowerCase().includes(term.toLowerCase())
+      ) ?? "All";
 
-    updateCount();
-    window.addEventListener("sellexa-cart-count-changed", updateCount);
+    setSearchInput("");
 
-    return () => {
-      window.removeEventListener("sellexa-cart-count-changed", updateCount);
-    };
-  }, []);
+    if (!term) {
+      router.push("/search?category=All");
+      return;
+    }
 
-  const filteredProducts = useMemo(() => {
-    const search = query.trim().toLowerCase();
-
-    return products.filter((product) => {
-      const categoryMatch =
-        activeCategory === "All" ||
-        product.category.toLowerCase() ===
-          activeCategory.toLowerCase();
-
-      const normalizedValues = [
-        product.name,
-        product.category,
-        product.badge || "",
-        ...(product.keywords || []),
-        String(product.price),
-        String(product.oldPrice || ""),
-        String(product.rating),
-        String(product.reviews),
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      const searchMatch = !search || normalizedValues.includes(search);
-
-      return searchMatch && categoryMatch;
-    });
-  }, [query, activeCategory]);
+    router.push(
+      `/search?q=${encodeURIComponent(term)}&category=${encodeURIComponent(exactCategory)}`
+    );
+  };
 
   const sortedProducts = useMemo(() => {
-    const nextProducts = [...filteredProducts];
+    const nextProducts = products.filter(
+      (product) =>
+        activeCategory === "All" ||
+        product.category.toLowerCase() === activeCategory.toLowerCase()
+    );
 
     switch (sortBy) {
       case "Price: Low to High":
-        return nextProducts.sort((a, b) => a.price - b.price);
+        return [...nextProducts].sort((a, b) => a.price - b.price);
       case "Price: High to Low":
-        return nextProducts.sort((a, b) => b.price - a.price);
+        return [...nextProducts].sort((a, b) => b.price - a.price);
       case "Newest":
-        return nextProducts.sort((a, b) => b.id - a.id);
+        return [...nextProducts].sort((a, b) => b.id - a.id);
       case "Popular":
       default:
-        return nextProducts.sort((a, b) => b.rating * b.reviews - a.rating * a.reviews);
+        return [...nextProducts].sort(
+          (a, b) => b.rating * b.reviews - a.rating * a.reviews
+        );
     }
-  }, [filteredProducts, sortBy]);
+  }, [activeCategory, sortBy]);
 
   const handleCartQuantityChange = (_productId: number, _nextQuantity: number) => {
     // cart logic removed
@@ -88,12 +78,13 @@ export default function Home() {
       <AnnouncementBar />
 
       <Header
-        query={query}
-        setQuery={setQuery}
+        query={searchInput}
+        setQuery={setSearchInput}
+        onSearchSubmit={handleSearchSubmit}
         products={products}
         setActiveCategory={setActiveCategory}
         cartCount={cartCount}
-        wishlistCount={0}
+        wishlistCount={wishlistCount}
       />
 
       <Hero />
@@ -105,9 +96,9 @@ export default function Home() {
 
       <ProductSection
         products={sortedProducts}
-        query={query}
+        query=""
         activeCategory={activeCategory}
-        setQuery={setQuery}
+        setQuery={setSearchInput}
         setActiveCategory={setActiveCategory}
         sortBy={sortBy}
         setSortBy={setSortBy}

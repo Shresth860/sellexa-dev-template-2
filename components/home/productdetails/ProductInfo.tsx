@@ -11,17 +11,22 @@ import {
 } from "lucide-react";
 
 import type { Product } from "@/data/product";
-import { addToCartCount } from "@/lib/cartCount";
+import { useCart } from "@/context/CartContext";
 
 type ProductInfoProps = {
   product: Product;
 };
 
 export default function ProductInfo({ product }: ProductInfoProps) {
-  const cartQuantity = 0;
+  const { addToCart, toggleWishlist, cartItems, wishlistItems } = useCart();
+  const cartQuantity = cartItems[product.id] ?? 0;
   const [quantity, setQuantity] = useState(cartQuantity > 0 ? cartQuantity : 1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(Boolean(wishlistItems[product.id]));
   const [isAddedToCart, setIsAddedToCart] = useState(cartQuantity > 0);
+
+  useEffect(() => {
+    setIsWishlisted(Boolean(wishlistItems[product.id]));
+  }, [product.id, wishlistItems]);
 
   useEffect(() => {
     if (cartQuantity > 0) {
@@ -51,19 +56,6 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     { label: "Color", value: "Midnight Black / Sand Beige / Alpine Silver" },
     { label: "Warranty", value: "12-month manufacturer warranty" },
     { label: "Delivery", value: "Dispatch within 24 hours across India" },
-  ];
-
-  const reviews = [
-    {
-      name: "Aarav S.",
-      rating: 5,
-      text: "Great quality and finish. The product feels premium and looks exactly as shown.",
-    },
-    {
-      name: "Meher P.",
-      rating: 4,
-      text: "Shipping was quick and the packaging was excellent. Very happy with the value.",
-    },
   ];
 
   return (
@@ -135,7 +127,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           type="button"
           onClick={() => {
             setIsAddedToCart(true);
-            addToCartCount(quantity);
+            addToCart(product.id, quantity);
           }}
           className={`flex flex-1 items-center justify-center gap-2 rounded-[16px] px-5 py-3 text-sm font-bold uppercase tracking-[0.08em] text-white transition ${
             isAddedToCart ? "bg-[#ff8a1f] hover:bg-[#e37b15]" : "bg-[#171a18] hover:bg-[#090b0b]"
@@ -150,7 +142,9 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         <button
           type="button"
           onClick={() => {
-            setIsWishlisted((value) => !value);
+            const nextValue = !isWishlisted;
+            setIsWishlisted(nextValue);
+            toggleWishlist(product.id, nextValue);
           }}
           className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
             isWishlisted
@@ -190,43 +184,19 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         </ul>
       </div>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-[24px] border border-zinc-200 bg-zinc-50 p-5">
-          <h3 className="text-lg font-extrabold tracking-[-0.04em] text-zinc-900">
-            Specifications
-          </h3>
+      <div className="mt-10 rounded-[24px] border border-zinc-200 bg-zinc-50 p-5">
+        <h3 className="text-lg font-extrabold tracking-[-0.04em] text-zinc-900">
+          Specifications
+        </h3>
 
-          <dl className="mt-4 space-y-3">
-            {specifications.map((item) => (
-              <div key={item.label} className="flex gap-4 border-b border-zinc-200 pb-3 last:border-b-0 last:pb-0">
-                <dt className="w-24 shrink-0 text-sm font-semibold text-zinc-500">{item.label}</dt>
-                <dd className="text-sm leading-6 text-zinc-700">{item.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-
-        <div className="rounded-[24px] border border-zinc-200 bg-zinc-50 p-5">
-          <h3 className="text-lg font-extrabold tracking-[-0.04em] text-zinc-900">
-            Reviews
-          </h3>
-
-          <div className="mt-4 space-y-4">
-            {reviews.map((review) => (
-              <div key={review.name} className="rounded-2xl border border-zinc-200 bg-white p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-semibold text-zinc-900">{review.name}</span>
-                  <span className="flex items-center gap-1 text-[#f59b38]">
-                    {Array.from({ length: review.rating }).map((_, index) => (
-                      <Star key={`${review.name}-${index}`} size={12} fill="currentColor" />
-                    ))}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-zinc-600">{review.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <dl className="mt-4 space-y-3">
+          {specifications.map((item) => (
+            <div key={item.label} className="flex gap-4 border-b border-zinc-200 pb-3 last:border-b-0 last:pb-0">
+              <dt className="w-24 shrink-0 text-sm font-semibold text-zinc-500">{item.label}</dt>
+              <dd className="text-sm leading-6 text-zinc-700">{item.value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </div>
   );

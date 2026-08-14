@@ -29,8 +29,10 @@ export default function RootLayout({
     >
       <body className="h-full" suppressHydrationWarning>
         <AuthProvider>
-          {children}
-          <AuthModal />
+          <CartProvider>
+            {children}
+            <AuthModal />
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

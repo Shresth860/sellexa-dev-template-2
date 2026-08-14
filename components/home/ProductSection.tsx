@@ -30,7 +30,14 @@ export default function ProductSection({
   onCartQuantityChange,
   onToggleWishlist,
 }: ProductSectionProps) {
+  const PAGE_SIZE = 6;
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [visibleProducts, setVisibleProducts] = useState<Product[]>([]);
+  const [cursor, setCursor] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const loadingRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const sortRef = useRef<HTMLDivElement | null>(null);
   const sortOptions = [
     "Popular",
@@ -38,6 +45,49 @@ export default function ProductSection({
     "Price: Low to High",
     "Price: High to Low",
   ];
+
+  const loadMoreProducts = () => {
+    if (loadingRef.current || !hasMore || products.length === 0) {
+      return;
+    }
+
+    loadingRef.current = true;
+    setLoading(true);
+
+    const nextBatch = products.slice(cursor, cursor + PAGE_SIZE).slice(0, PAGE_SIZE);
+
+    if (nextBatch.length === 0) {
+      setHasMore(false);
+      loadingRef.current = false;
+      setLoading(false);
+      return;
+    }
+
+    setVisibleProducts((current) => {
+      const combined = [...current, ...nextBatch];
+      return combined
+        .filter(
+          (product, index, arr) => arr.findIndex((item) => item.id === product.id) === index
+        )
+        .slice(0, Math.max(PAGE_SIZE, current.length + nextBatch.length));
+    });
+
+    const nextCursor = cursor + nextBatch.length;
+    setCursor(nextCursor);
+    setHasMore(nextCursor < products.length);
+    loadingRef.current = false;
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    const nextBatch = products.slice(0, PAGE_SIZE);
+
+    setVisibleProducts(nextBatch);
+    setCursor(nextBatch.length);
+    setHasMore(nextBatch.length < products.length);
+    loadingRef.current = false;
+    setLoading(false);
+  }, [products]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -49,6 +99,29 @@ export default function ProductSection({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!sentinelRef.current || !hasMore || loading || products.length === 0) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          loadMoreProducts();
+        }
+      },
+      {
+        root: null,
+        rootMargin: "250px 0px",
+        threshold: 0.1,
+      }
+    );
+
+    observer.observe(sentinelRef.current);
+
+    return () => observer.disconnect();
+  }, [hasMore, loading, products, cursor]);
 
   return (
     <section
@@ -134,19 +207,45 @@ export default function ProductSection({
 
       {/* Product Grid */}
       {products.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-6">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              quantity={0}
-              onQuantityChange={(nextQuantity) =>
-                onCartQuantityChange(product.id, nextQuantity)
-              }
-              onToggleWishlist={(isActive) => onToggleWishlist(product.id, isActive)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-6">
+            {visibleProducts.slice(0, PAGE_SIZE).map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                quantity={0}
+                onQuantityChange={(nextQuantity) =>
+                  onCartQuantityChange(product.id, nextQuantity)
+                }
+                onToggleWishlist={(isActive) => onToggleWishlist(product.id, isActive)}
+              />
+            ))}
+          </div>
+
+          {loading && (
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-6">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={`product-skeleton-${index}`}
+                  className="animate-pulse overflow-hidden rounded-2xl border border-zinc-200 bg-white"
+                >
+                  <div className="h-40 rounded-t-2xl bg-zinc-200" />
+                  <div className="space-y-3 p-3">
+                    <div className="h-3 w-2/3 rounded bg-zinc-200" />
+                    <div className="h-3 w-1/2 rounded bg-zinc-200" />
+                    <div className="h-3 w-1/3 rounded bg-zinc-200" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {hasMore && !loading && (
+            <div className="mt-6 flex justify-center">
+              <div ref={sentinelRef} className="h-2 w-28 rounded-full bg-zinc-200/80" aria-hidden="true" />
+            </div>
+          )}
+        </>
       ) : (
         <EmptyProductState
           setQuery={setQuery}

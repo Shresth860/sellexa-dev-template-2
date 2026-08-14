@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Heart,
   ShoppingCart,
@@ -9,13 +9,14 @@ import {
 } from "lucide-react";
 
 import type { Product } from "@/data/product";
-import { addToCartCount } from "@/lib/cartCount";
+import { useCart } from "@/context/CartContext";
 
 type ProductCardProps = {
   product: Product;
   quantity?: number;
   onQuantityChange?: (nextQuantity: number) => void;
   onToggleWishlist?: (isActive: boolean) => void;
+  showBadge?: boolean;
 };
 
 export default function ProductCard({
@@ -23,6 +24,7 @@ export default function ProductCard({
   quantity: initialQuantity = 0,
   onQuantityChange,
   onToggleWishlist,
+  showBadge = true,
 }: ProductCardProps) {
   const formatPrice = (price: number) =>
     `₹${price.toLocaleString("en-IN")}`;
@@ -41,9 +43,14 @@ export default function ProductCard({
       ? product.images
       : [product.image];
 
+  const { addToCart, toggleWishlist, wishlistItems } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(Boolean(wishlistItems[product.id]));
   const [quantity, setQuantity] = useState(initialQuantity);
+
+  useEffect(() => {
+    setIsWishlisted(Boolean(wishlistItems[product.id]));
+  }, [product.id, wishlistItems]);
 
   const activeImage =
     productImages[selectedImage] || product.image;
@@ -51,6 +58,7 @@ export default function ProductCard({
   const handleWishlistToggle = () => {
     const nextValue = !isWishlisted;
     setIsWishlisted(nextValue);
+    toggleWishlist(product.id, nextValue);
     onToggleWishlist?.(nextValue);
   };
 
@@ -58,7 +66,7 @@ export default function ProductCard({
     const nextValue = quantity + 1;
     setQuantity(nextValue);
     onQuantityChange?.(nextValue);
-    addToCartCount(1);
+    addToCart(product.id, 1);
   };
 
   const handleQuantityChange = (delta: number) => {
@@ -69,11 +77,11 @@ export default function ProductCard({
     onQuantityChange?.(nextValue);
 
     if (delta > 0 && previousValue < nextValue) {
-      addToCartCount(delta);
+      addToCart(product.id, delta);
     }
 
     if (delta < 0 && previousValue > nextValue) {
-      addToCartCount(delta);
+      addToCart(product.id, delta);
     }
   };
 
@@ -135,7 +143,7 @@ export default function ProductCard({
             DISCOUNT / BADGE
         ================================================== */}
 
-        {(product.badge || discount) && (
+        {showBadge && (product.badge || discount) && (
           <div
             className="
               absolute

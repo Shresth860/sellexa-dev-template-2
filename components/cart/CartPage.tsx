@@ -104,6 +104,7 @@ export default function CartPage() {
         wishlistCount={wishlistCount}
         showBackHome
         backHomeHref="/"
+        hideCart
       />
 
       <section className="mx-auto mt-8 w-[calc(100%-28px)] max-w-[1720px] pb-16">
