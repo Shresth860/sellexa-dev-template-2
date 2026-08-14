@@ -91,7 +91,7 @@ export default function ProductCard({
       className="
         group
         w-full
-        max-w-[300px]
+        max-w-[240px]
         overflow-hidden
         rounded-[20px]
         border
@@ -110,7 +110,7 @@ export default function ProductCard({
       <div
         className="
           relative
-          h-[190px]
+          h-[152px]
           w-full
           overflow-hidden
           rounded-t-[20px]
@@ -134,7 +134,7 @@ export default function ProductCard({
               object-cover
               transition-transform
               duration-200
-              group-hover:scale-[1.03]
+              hover:scale-[1.03]
             "
           />
         </Link>
@@ -200,13 +200,13 @@ export default function ProductCard({
           THUMBNAILS
       ====================================================== */}
 
-      <div className="px-3 pt-2">
+      <div className="px-2.5 pt-2">
         <div
           className="
             flex
-            h-[40px]
+            h-[32px]
             items-center
-            gap-2
+            gap-1.5
             overflow-hidden
           "
         >
@@ -229,8 +229,8 @@ export default function ProductCard({
                   aria-pressed={isSelected}
                   className={`
                     relative
-                    h-[38px]
-                    w-[38px]
+                    h-[30px]
+                    w-[30px]
                     shrink-0
                     overflow-hidden
                     rounded-[7px]
@@ -279,7 +279,7 @@ export default function ProductCard({
           PRODUCT DETAILS
       ====================================================== */}
 
-      <div className="px-3 pb-3.5 pt-2">
+      <div className="px-2.5 pb-3 pt-2">
         {/* Category */}
 
         <p
@@ -301,9 +301,9 @@ export default function ProductCard({
           className="
             mt-1
             truncate
-            text-[14px]
+            text-[12px]
             font-semibold
-            leading-[18px]
+            leading-[16px]
             text-[#17191c]
           "
         >
@@ -314,7 +314,7 @@ export default function ProductCard({
 
         <div
           className="
-            mt-1.5
+            mt-1
             flex
             items-center
             gap-1.5
@@ -362,12 +362,12 @@ export default function ProductCard({
             className="
               flex
               items-center
-              gap-2
+              gap-1.5
             "
           >
             <span
               className="
-                text-[15px]
+                text-[13px]
                 font-bold
                 leading-none
                 text-[#17191c]
@@ -397,10 +397,10 @@ export default function ProductCard({
 
         <div
           className="
-            mt-3.5
+            mt-3
             flex
             items-center
-            gap-2
+            gap-1.5
           "
         >
           {/* Add To Cart */}
@@ -436,18 +436,18 @@ export default function ProductCard({
               onClick={handleAddToCart}
               className="
                 flex
-                h-[40px]
+                h-[34px]
                 min-w-0
                 flex-1
                 items-center
                 justify-center
-                gap-1.5
+                gap-1
                 rounded-full
                 border
                 border-zinc-800
                 bg-[#171a18]
                 px-3
-                text-[9px]
+                text-[8px]
                 font-bold
                 uppercase
                 tracking-[0.08em]
@@ -470,7 +470,7 @@ export default function ProductCard({
 
           <Link
             href={`/checkout?productId=${product.id}`}
-            className="inline-flex h-[40px] flex-1 items-center justify-center rounded-full bg-[#ff8a1f] px-2 text-[9px] font-bold uppercase tracking-[0.08em] text-white shadow-[0_10px_18px_rgba(255,138,31,0.22)] transition hover:bg-[#e37b15]"
+            className="inline-flex h-[34px] flex-1 items-center justify-center rounded-full bg-[#ff8a1f] px-2 text-[8px] font-bold uppercase tracking-[0.08em] text-white shadow-[0_10px_18px_rgba(255,138,31,0.22)] transition hover:bg-[#e37b15]"
           >
             Buy
           </Link>

@@ -51,9 +51,23 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     "Fast shipping and easy returns across India",
   ];
 
+  const colorPalette: Record<string, string[]> = {
+    Black: ["#111827", "#374151", "#1f2937"],
+    "Titanium Gray": ["#9ca3af", "#6b7280", "#d1d5db"],
+    Blue: ["#2563eb", "#60a5fa", "#bfdbfe"],
+    White: ["#f5f5f4", "#e5e7eb", "#d4d4d8"],
+    Silver: ["#cbd5e1", "#94a3b8", "#64748b"],
+    "Walnut Brown": ["#7c2d12", "#a16207", "#78350f"],
+    Beige: ["#f3e7d3", "#d4b08c", "#c89b72"],
+    Pink: ["#ec4899", "#f9a8d4", "#fbcfe8"],
+    Red: ["#dc2626", "#ef4444", "#fca5a5"],
+    Gold: ["#d4af37", "#f5d76e", "#fff1a8"],
+  };
+
+  const availableColors = product.color ? colorPalette[product.color] ?? ["#111827", "#6b7280", "#d1d5db"] : ["#111827", "#6b7280", "#d1d5db"];
+
   const specifications = [
     { label: "Material", value: "Premium alloy / high-grade fabric / certified material" },
-    { label: "Color", value: "Midnight Black / Sand Beige / Alpine Silver" },
     { label: "Warranty", value: "12-month manufacturer warranty" },
     { label: "Delivery", value: "Dispatch within 24 hours across India" },
   ];
@@ -89,6 +103,27 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           </del>
         )}
       </div>
+
+      {product.color && (
+        <div className="mt-5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+            Available colors
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            {availableColors.map((color, index) => (
+              <span
+                key={`${product.id}-${color}-${index}`}
+                title={product.color}
+                className="h-7 w-7 rounded-full border border-zinc-200 shadow-[0_4px_10px_rgba(15,23,42,0.08)]"
+                style={{ backgroundColor: color }}
+              />
+            ))}
+
+            <span className="text-sm font-medium text-zinc-700">{product.color}</span>
+          </div>
+        </div>
+      )}
 
       <p className="mt-5 text-base leading-7 text-zinc-600">
         Built for everyday use with a premium finish, strong performance, and a smooth shopping experience that matches modern lifestyles.
