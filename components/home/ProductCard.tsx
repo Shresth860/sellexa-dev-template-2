@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import type { Product } from "@/data/product";
+import { addToCartCount } from "@/lib/cartCount";
 
 type ProductCardProps = {
   product: Product;
@@ -57,12 +58,23 @@ export default function ProductCard({
     const nextValue = quantity + 1;
     setQuantity(nextValue);
     onQuantityChange?.(nextValue);
+    addToCartCount(1);
   };
 
   const handleQuantityChange = (delta: number) => {
     const nextValue = Math.max(0, quantity + delta);
+    const previousValue = quantity;
+
     setQuantity(nextValue);
     onQuantityChange?.(nextValue);
+
+    if (delta > 0 && previousValue < nextValue) {
+      addToCartCount(delta);
+    }
+
+    if (delta < 0 && previousValue > nextValue) {
+      addToCartCount(delta);
+    }
   };
 
   return (
@@ -96,21 +108,28 @@ export default function ProductCard({
           rounded-t-[20px]
         "
       >
-        {/* Product Image */}
-
-        <img
-          src={activeImage}
-          alt={product.name}
-          loading="lazy"
-          className="
-            absolute
-            inset-0
-            block
-            h-full
-            w-full
-            object-cover
-          "
-        />
+        <Link
+          href={`/product/${product.id}`}
+          aria-label={`View details for ${product.name}`}
+          className="block h-full w-full"
+        >
+          <img
+            src={activeImage}
+            alt={product.name}
+            loading="lazy"
+            className="
+              absolute
+              inset-0
+              block
+              h-full
+              w-full
+              object-cover
+              transition-transform
+              duration-200
+              group-hover:scale-[1.03]
+            "
+          />
+        </Link>
 
         {/* =================================================
             DISCOUNT / BADGE
@@ -137,7 +156,37 @@ export default function ProductCard({
           </div>
         )}
 
-              </div>
+        <button
+          type="button"
+          aria-label={`Wishlist ${product.name}`}
+          onClick={handleWishlistToggle}
+          className={`
+            absolute
+            right-2.5
+            top-2.5
+            z-20
+            grid
+            place-items-center
+            rounded-full
+            border
+            shadow-[0_10px_20px_rgba(15,23,42,0.18)]
+            backdrop-blur-sm
+            transition-all
+            duration-200
+            ${
+              isWishlisted
+                ? "size-[32px] border-[#ff8a1f] bg-slate-200 text-[#ff8618]"
+                : "size-[30px] border-white/20 bg-[#171a18]/70 text-white hover:border-[#ff8618] hover:text-[#ff8618]"
+            }
+          `}
+        >
+          <Heart
+            size={14}
+            fill={isWishlisted ? "currentColor" : "none"}
+            strokeWidth={2}
+          />
+        </button>
+      </div>
 
       {/* =====================================================
           THUMBNAILS
@@ -349,17 +398,17 @@ export default function ProductCard({
           {/* Add To Cart */}
 
           {quantity > 0 ? (
-            <div className="flex h-[38px] flex-1 items-center justify-between overflow-hidden rounded-[7px] bg-white px-1 text-[#182235] shadow-sm">
+            <div className="flex h-[40px] min-w-0 flex-1 items-center justify-between overflow-hidden rounded-full border border-zinc-800 bg-[#171a18] px-1 shadow-[0_8px_18px_rgba(23,26,24,0.18)]">
               <button
                 type="button"
                 aria-label={`Decrease quantity for ${product.name}`}
                 onClick={() => handleQuantityChange(-1)}
-                className="flex h-full w-9 items-center justify-center rounded-[5px] bg-[#182235] text-lg font-bold text-white transition hover:brightness-110"
+                className="flex h-[30px] w-8 items-center justify-center rounded-full bg-white text-lg font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-100"
               >
                 −
               </button>
 
-              <span className="min-w-0 flex-1 text-center text-base font-extrabold uppercase tracking-[0.04em] text-[#182235]">
+              <span className="min-w-0 flex-1 text-center text-sm font-extrabold uppercase tracking-[0.08em] text-white">
                 {quantity}
               </span>
 
@@ -367,7 +416,7 @@ export default function ProductCard({
                 type="button"
                 aria-label={`Increase quantity for ${product.name}`}
                 onClick={() => handleQuantityChange(1)}
-                className="flex h-full w-9 items-center justify-center rounded-[5px] bg-[#182235] text-lg font-bold text-white transition hover:brightness-110"
+                className="flex h-[30px] w-8 items-center justify-center rounded-full bg-white text-lg font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-100"
               >
                 +
               </button>
@@ -379,22 +428,26 @@ export default function ProductCard({
               onClick={handleAddToCart}
               className="
                 flex
-                h-[38px]
+                h-[40px]
+                min-w-0
                 flex-1
                 items-center
                 justify-center
-                gap-2
-                rounded-[7px]
-                bg-[#182235]
+                gap-1.5
+                rounded-full
+                border
+                border-zinc-800
+                bg-[#171a18]
                 px-3
-                text-[10px]
+                text-[9px]
                 font-bold
                 uppercase
-                tracking-[0.02em]
+                tracking-[0.08em]
                 text-white
-                transition-colors
+                transition-all
                 duration-200
-                hover:bg-[#101827]
+                whitespace-nowrap
+                hover:bg-[#090b0b]
                 active:scale-[0.98]
               "
             >
@@ -403,45 +456,16 @@ export default function ProductCard({
                 strokeWidth={1.8}
               />
 
-              Add to Cart
+              Add to cart
             </button>
           )}
 
           <Link
-            href={`/product/${product.id}`}
-            className="inline-flex h-[38px] items-center justify-center rounded-[7px] border border-zinc-200 bg-zinc-50 px-2.5 text-[10px] font-bold uppercase tracking-[0.04em] text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-100"
+            href={`/checkout?productId=${product.id}`}
+            className="inline-flex h-[40px] flex-1 items-center justify-center rounded-full bg-[#ff8a1f] px-2 text-[9px] font-bold uppercase tracking-[0.08em] text-white shadow-[0_10px_18px_rgba(255,138,31,0.22)] transition hover:bg-[#e37b15]"
           >
-            Details
+            Buy
           </Link>
-
-          {/* Wishlist */}
-
-          <button
-            type="button"
-            aria-label={`Wishlist ${product.name}`}
-            onClick={handleWishlistToggle}
-            className={`
-              grid
-              size-[38px]
-              shrink-0
-              place-items-center
-              rounded-[7px]
-              border
-              transition-all
-              duration-200
-              ${
-                isWishlisted
-                  ? "border-[#ff8618] bg-[#fff7ef] text-[#ff8618]"
-                  : "border-[#dce0e4] bg-white text-[#ff8618] hover:border-[#ff8618] hover:bg-[#fff7ef]"
-              }
-            `}
-          >
-            <Heart
-              size={17}
-              fill={isWishlisted ? "currentColor" : "none"}
-              strokeWidth={1.8}
-            />
-          </button>
         </div>
       </div>
     </article>

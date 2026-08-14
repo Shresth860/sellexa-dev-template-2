@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
-import { CartProvider } from "@/context/CartContext";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { CartProvider } from "@/context/CartContext";
 
 const manrope = Manrope({
   variable: "--font-manrope",

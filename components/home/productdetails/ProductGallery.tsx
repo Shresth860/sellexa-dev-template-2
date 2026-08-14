@@ -16,7 +16,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
   const [selectedImage, setSelectedImage] = useState(0);
 
   return (
-    <div className="rounded-[28px] border border-zinc-200 bg-white p-3 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:p-4">
+    <div className="w-full rounded-[28px] border border-zinc-200 bg-white p-3 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:p-4">
       <div className="relative overflow-hidden rounded-[22px] bg-[#f5f6f3]">
         <img
           src={productImages[selectedImage] ?? product.image}
