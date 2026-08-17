@@ -1,10 +1,12 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { ArrowRight, CheckCircle2, ShoppingBag } from "lucide-react";
 
 type CartSummaryProps = {
   itemCount: number;
+  productIds: number[];
 };
 
 const checklist = [
@@ -13,22 +15,27 @@ const checklist = [
   "7-Day Easy Returns",
 ];
 
-export default function CartSummary({ itemCount }: CartSummaryProps) {
-  const handleCheckout = () => {
-    if (itemCount === 0) return;
+export default function CartSummary({ itemCount, productIds }: CartSummaryProps) {
+  const router = useRouter();
 
-    Swal.fire({
-      title: "Checkout coming soon",
-      text: "Order checkout isn't available yet — stay tuned!",
-      icon: "info",
-      confirmButtonColor: "#0f172a",
-      confirmButtonText: "Got it",
-      customClass: {
-        popup: "rounded-3xl font-sans",
-        title: "text-lg font-bold text-zinc-900",
-        confirmButton: "rounded-full px-5 py-2.5 text-xs font-semibold text-white cursor-pointer",
-      },
-    });
+  const handleCheckout = () => {
+    if (itemCount === 0 || productIds.length === 0) {
+      Swal.fire({
+        title: "Select items to checkout",
+        text: "Choose at least one item from your cart to continue.",
+        icon: "info",
+        confirmButtonColor: "#0f172a",
+        confirmButtonText: "Got it",
+        customClass: {
+          popup: "rounded-3xl font-sans",
+          title: "text-lg font-bold text-zinc-900",
+          confirmButton: "rounded-full px-5 py-2.5 text-xs font-semibold text-white cursor-pointer",
+        },
+      });
+      return;
+    }
+
+    router.push(`/checkout?items=${productIds.join(",")}`);
   };
 
   return (
