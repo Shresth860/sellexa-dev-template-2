@@ -15,82 +15,170 @@ export type WishlistItems = Record<number, boolean>;
 interface CartContextType {
   cartItems: CartItems;
   wishlistItems: WishlistItems;
+
   cartCount: number;
   wishlistCount: number;
-  addToCart: (productId: number, quantity?: number) => void;
-  updateCartQuantity: (productId: number, nextQuantity: number) => void;
-  removeFromCart: (productId: number) => void;
+
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  clearSearch: () => void;
+
+  addToCart: (
+    productId: number,
+    quantity?: number
+  ) => void;
+
+  updateCartQuantity: (
+    productId: number,
+    nextQuantity: number
+  ) => void;
+
+  removeFromCart: (
+    productId: number
+  ) => void;
+
   clearCart: () => void;
-  toggleWishlist: (productId: number, isActive?: boolean) => void;
+
+  toggleWishlist: (
+    productId: number,
+    isActive?: boolean
+  ) => void;
 }
 
-const CART_STORAGE_KEY = "sellexa-cart-items";
-const WISHLIST_STORAGE_KEY = "sellexa-wishlist-items";
+const CART_STORAGE_KEY =
+  "sellexa-cart-items";
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+const WISHLIST_STORAGE_KEY =
+  "sellexa-wishlist-items";
 
-function readStorage<T>(key: string, fallback: T): T {
+const CartContext =
+  createContext<CartContextType | undefined>(
+    undefined
+  );
+
+function readStorage<T>(
+  key: string,
+  fallback: T
+): T {
   if (typeof window === "undefined") {
     return fallback;
   }
 
   try {
-    const rawValue = window.localStorage.getItem(key);
-    return rawValue ? (JSON.parse(rawValue) as T) : fallback;
+    const rawValue =
+      window.localStorage.getItem(key);
+
+    return rawValue
+      ? (JSON.parse(rawValue) as T)
+      : fallback;
   } catch {
     return fallback;
   }
 }
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItems>({});
-  const [wishlistItems, setWishlistItems] = useState<WishlistItems>({});
-  const [isHydrated, setIsHydrated] = useState(false);
+export function CartProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const [cartItems, setCartItems] =
+    useState<CartItems>({});
+
+  const [wishlistItems, setWishlistItems] =
+    useState<WishlistItems>({});
+
+  const [searchQuery, setSearchQuery] =
+    useState("");
+
+  const [isHydrated, setIsHydrated] =
+    useState(false);
 
   useEffect(() => {
     const syncFromStorage = () => {
-      const nextCartItems = readStorage<CartItems>(CART_STORAGE_KEY, {});
-      const nextWishlistItems = readStorage<WishlistItems>(WISHLIST_STORAGE_KEY, {});
+      const nextCartItems =
+        readStorage<CartItems>(
+          CART_STORAGE_KEY,
+          {}
+        );
+
+      const nextWishlistItems =
+        readStorage<WishlistItems>(
+          WISHLIST_STORAGE_KEY,
+          {}
+        );
 
       setCartItems((current) => {
-        const currentValue = JSON.stringify(current);
-        const nextValue = JSON.stringify(nextCartItems);
-        return currentValue === nextValue ? current : nextCartItems;
+        const currentValue =
+          JSON.stringify(current);
+
+        const nextValue =
+          JSON.stringify(nextCartItems);
+
+        return currentValue === nextValue
+          ? current
+          : nextCartItems;
       });
 
       setWishlistItems((current) => {
-        const currentValue = JSON.stringify(current);
-        const nextValue = JSON.stringify(nextWishlistItems);
-        return currentValue === nextValue ? current : nextWishlistItems;
+        const currentValue =
+          JSON.stringify(current);
+
+        const nextValue =
+          JSON.stringify(nextWishlistItems);
+
+        return currentValue === nextValue
+          ? current
+          : nextWishlistItems;
       });
     };
 
     syncFromStorage();
     setIsHydrated(true);
 
-    const handleStorage = (event: StorageEvent) => {
-      if (!event.key || event.key === CART_STORAGE_KEY || event.key === WISHLIST_STORAGE_KEY) {
+    const handleStorage = (
+      event: StorageEvent
+    ) => {
+      if (
+        !event.key ||
+        event.key === CART_STORAGE_KEY ||
+        event.key === WISHLIST_STORAGE_KEY
+      ) {
         syncFromStorage();
       }
     };
 
-    window.addEventListener("storage", handleStorage);
+    window.addEventListener(
+      "storage",
+      handleStorage
+    );
 
     return () => {
-      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(
+        "storage",
+        handleStorage
+      );
     };
   }, []);
 
   useEffect(() => {
-    if (!isHydrated || typeof window === "undefined") {
+    if (
+      !isHydrated ||
+      typeof window === "undefined"
+    ) {
       return;
     }
 
-    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+    window.localStorage.setItem(
+      CART_STORAGE_KEY,
+      JSON.stringify(cartItems)
+    );
   }, [cartItems, isHydrated]);
 
   useEffect(() => {
-    if (!isHydrated || typeof window === "undefined") {
+    if (
+      !isHydrated ||
+      typeof window === "undefined"
+    ) {
       return;
     }
 
@@ -98,40 +186,70 @@ export function CartProvider({ children }: { children: ReactNode }) {
       WISHLIST_STORAGE_KEY,
       JSON.stringify(wishlistItems)
     );
-  }, [wishlistItems, isHydrated]);
+  }, [
+    wishlistItems,
+    isHydrated,
+  ]);
 
   const cartCount = useMemo(
-    () => Object.values(cartItems).reduce((total, quantity) => total + quantity, 0),
+    () =>
+      Object.values(cartItems).reduce(
+        (total, quantity) =>
+          total + quantity,
+        0
+      ),
     [cartItems]
   );
 
   const wishlistCount = useMemo(
-    () => Object.keys(wishlistItems).length,
+    () =>
+      Object.keys(wishlistItems).length,
     [wishlistItems]
   );
 
-  const addToCart = (productId: number, quantity = 1) => {
+  const addToCart = (
+    productId: number,
+    quantity = 1
+  ) => {
     setCartItems((prev) => {
-      const currentQuantity = prev[productId] ?? 0;
+      const currentQuantity =
+        prev[productId] ?? 0;
+
       return {
         ...prev,
-        [productId]: currentQuantity + quantity,
+        [productId]:
+          currentQuantity + quantity,
       };
     });
   };
 
-  const updateCartQuantity = (productId: number, nextQuantity: number) => {
+  const updateCartQuantity = (
+    productId: number,
+    nextQuantity: number
+  ) => {
     setCartItems((prev) => {
-      const currentQuantity = prev[productId] ?? 0;
-      if (nextQuantity <= 0) {
-        if (!currentQuantity) return prev;
+      const currentQuantity =
+        prev[productId] ?? 0;
 
-        const updated = { ...prev };
+      if (nextQuantity <= 0) {
+        if (!currentQuantity) {
+          return prev;
+        }
+
+        const updated = {
+          ...prev,
+        };
+
         delete updated[productId];
+
         return updated;
       }
 
-      if (currentQuantity === nextQuantity) return prev;
+      if (
+        currentQuantity === nextQuantity
+      ) {
+        return prev;
+      }
 
       return {
         ...prev,
@@ -140,17 +258,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const removeFromCart = (productId: number) => {
-    updateCartQuantity(productId, 0);
+  const removeFromCart = (
+    productId: number
+  ) => {
+    updateCartQuantity(
+      productId,
+      0
+    );
   };
 
   const clearCart = () => {
     setCartItems({});
   };
 
-  const toggleWishlist = (productId: number, isActive = true) => {
+  const toggleWishlist = (
+    productId: number,
+    isActive = true
+  ) => {
     setWishlistItems((prev) => {
-      const next = { ...prev };
+      const next = {
+        ...prev,
+      };
 
       if (isActive) {
         next[productId] = true;
@@ -162,13 +290,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
+
   return (
     <CartContext.Provider
       value={{
         cartItems,
         wishlistItems,
+
         cartCount,
         wishlistCount,
+
+        searchQuery,
+        setSearchQuery,
+        clearSearch,
+
         addToCart,
         updateCartQuantity,
         removeFromCart,
@@ -182,10 +320,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
 }
 
 export function useCart() {
-  const context = useContext(CartContext);
+  const context =
+    useContext(CartContext);
 
   if (!context) {
-    throw new Error("useCart must be used within a CartProvider");
+    throw new Error(
+      "useCart must be used within a CartProvider"
+    );
   }
 
   return context;

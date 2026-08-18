@@ -91,7 +91,7 @@ export default function ProductCard({
       className="
         group
         w-full
-        max-w-[240px]
+        min-w-0
         overflow-hidden
         rounded-[20px]
         border
@@ -99,8 +99,8 @@ export default function ProductCard({
         bg-white
         transition-all
         duration-200
-        hover:-translate-y-0.5
-        hover:shadow-[0_12px_30px_rgba(15,23,42,0.08)]
+        sm:hover:-translate-y-0.5
+        sm:hover:shadow-[0_12px_30px_rgba(15,23,42,0.08)]
       "
     >
       {/* =====================================================
@@ -200,14 +200,19 @@ export default function ProductCard({
           THUMBNAILS
       ====================================================== */}
 
-      <div className="px-2.5 pt-2">
+      <div className="px-2 pt-2 sm:px-2.5">
         <div
           className="
             flex
-            h-[32px]
+            h-[30px]
             items-center
             gap-1.5
-            overflow-hidden
+            overflow-x-auto
+            overflow-y-hidden
+            scrollbar-none
+            [-ms-overflow-style:none]
+            [scrollbar-width:none]
+            sm:h-[32px]
           "
         >
           {productImages
@@ -279,7 +284,7 @@ export default function ProductCard({
           PRODUCT DETAILS
       ====================================================== */}
 
-      <div className="px-2.5 pb-3 pt-2">
+      <div className="px-2 pb-2.5 pt-2 sm:px-2.5 sm:pb-3">
         {/* Category */}
 
         <p
@@ -300,10 +305,13 @@ export default function ProductCard({
         <h3
           className="
             mt-1
-            truncate
-            text-[12px]
+            line-clamp-2
+            min-h-[32px]
+            text-[11px]
             font-semibold
-            leading-[16px]
+            leading-[15px]
+            sm:text-[12px]
+            sm:leading-[16px]
             text-[#17191c]
           "
         >
@@ -352,10 +360,11 @@ export default function ProductCard({
 
         <div
           className="
-            mt-3
+            mt-2.5
             flex
             items-center
             justify-between
+            sm:mt-3
           "
         >
           <div
@@ -397,38 +406,41 @@ export default function ProductCard({
 
         <div
           className="
-            mt-3
+            mt-2.5
             flex
+            w-full
             items-center
             gap-1.5
+            sm:mt-3
+            sm:gap-2
           "
         >
           {/* Add To Cart */}
 
           {quantity > 0 ? (
-            <div className="flex h-[40px] min-w-0 flex-1 items-center justify-between overflow-hidden rounded-full border border-zinc-800 bg-[#171a18] px-1 shadow-[0_8px_18px_rgba(23,26,24,0.18)]">
-              <button
-                type="button"
-                aria-label={`Decrease quantity for ${product.name}`}
-                onClick={() => handleQuantityChange(-1)}
-                className="flex h-[30px] w-8 items-center justify-center rounded-full bg-white text-lg font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-100"
-              >
-                −
-              </button>
+          <div className="flex h-[34px] min-w-0 flex-1 items-center justify-between overflow-hidden rounded-full border border-zinc-800 bg-[#171a18] px-1 shadow-[0_6px_14px_rgba(23,26,24,0.16)] sm:h-[40px]">
+            <button
+              type="button"
+              aria-label={`Decrease quantity for ${product.name}`}
+              onClick={() => handleQuantityChange(-1)}
+              className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-white text-base font-bold leading-none text-zinc-900 shadow-sm transition hover:bg-zinc-100 active:scale-95 sm:h-[30px] sm:w-[30px]"
+            >
+              −
+            </button>
 
-              <span className="min-w-0 flex-1 text-center text-sm font-extrabold uppercase tracking-[0.08em] text-white">
-                {quantity}
-              </span>
+            <span className="min-w-0 flex-1 px-1 text-center text-xs font-extrabold text-white sm:text-sm">
+              {quantity}
+            </span>
 
-              <button
-                type="button"
-                aria-label={`Increase quantity for ${product.name}`}
-                onClick={() => handleQuantityChange(1)}
-                className="flex h-[30px] w-8 items-center justify-center rounded-full bg-white text-lg font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-100"
-              >
-                +
-              </button>
-            </div>
+            <button
+              type="button"
+              aria-label={`Increase quantity for ${product.name}`}
+              onClick={() => handleQuantityChange(1)}
+              className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-white text-base font-bold leading-none text-zinc-900 shadow-sm transition hover:bg-zinc-100 active:scale-95 sm:h-[30px] sm:w-[30px]"
+            >
+              +
+            </button>
+          </div>
           ) : (
             <button
               type="button"
@@ -436,19 +448,23 @@ export default function ProductCard({
               onClick={handleAddToCart}
               className="
                 flex
-                h-[34px]
+                h-[42px]
                 min-w-0
-                flex-1
+                flex-[1.45]
                 items-center
                 justify-center
-                gap-1
+                gap-1.5
                 rounded-full
                 border
                 border-zinc-800
                 bg-[#171a18]
-                px-3
-                text-[8px]
+                px-2.5
+                text-[9px]
                 font-bold
+                sm:h-[40px]
+                sm:flex-1
+                sm:px-3
+                sm:text-[9px]
                 uppercase
                 tracking-[0.08em]
                 text-white
@@ -460,8 +476,8 @@ export default function ProductCard({
               "
             >
               <ShoppingCart
-                size={14}
-                strokeWidth={1.8}
+                size={15}
+                strokeWidth={1.9}
               />
 
               Add to cart
@@ -470,7 +486,7 @@ export default function ProductCard({
 
           <Link
             href={`/checkout?productId=${product.id}`}
-            className="inline-flex h-[34px] flex-1 items-center justify-center rounded-full bg-[#ff8a1f] px-2 text-[8px] font-bold uppercase tracking-[0.08em] text-white shadow-[0_10px_18px_rgba(255,138,31,0.22)] transition hover:bg-[#e37b15]"
+            className="inline-flex h-[42px] min-w-0 flex-[0.75] items-center justify-center rounded-full bg-[#ff8a1f] px-2 text-[9px] font-bold uppercase tracking-[0.06em] text-white shadow-[0_8px_16px_rgba(255,138,31,0.18)] sm:h-[40px] sm:flex-1 sm:px-2 sm:text-[9px] shadow-[0_10px_18px_rgba(255,138,31,0.22)] transition hover:bg-[#e37b15]"
           >
             Buy
           </Link>
