@@ -56,12 +56,19 @@ export default function CartPage() {
     knownIdsRef.current = currentIds;
   }, [lineItems]);
 
-  const selectedItemCount = useMemo(
-    () =>
-      lineItems
-        .filter((item) => selectedIds.has(item.product.id))
-        .reduce((total, item) => total + item.quantity, 0),
+  const selectedLineItems = useMemo(
+    () => lineItems.filter((item) => selectedIds.has(item.product.id)),
     [lineItems, selectedIds]
+  );
+
+  const selectedItemCount = useMemo(
+    () => selectedLineItems.reduce((total, item) => total + item.quantity, 0),
+    [selectedLineItems]
+  );
+
+  const selectedProductIds = useMemo(
+    () => selectedLineItems.map((item) => item.product.id),
+    [selectedLineItems]
   );
 
   const allSelected = lineItems.length > 0 && selectedIds.size === lineItems.length;
@@ -253,7 +260,7 @@ export default function CartPage() {
             </div>
 
             <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
-              <CartSummary itemCount={selectedItemCount} />
+              <CartSummary itemCount={selectedItemCount} productIds={selectedProductIds} />
             </div>
           </div>
         )}
