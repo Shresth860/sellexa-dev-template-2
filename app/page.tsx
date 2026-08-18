@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useCart } from "@/context/CartContext";
+
 import AnnouncementBar from "@/components/home/AnnouncementBar";
 import Header from "@/components/home/Header";
 import Hero from "@/components/home/Hero";
@@ -17,29 +18,42 @@ import { categories, products } from "@/data/product";
 
 export default function Home() {
   const router = useRouter();
-  const { cartCount, wishlistCount } = useCart();
-  const [searchInput, setSearchInput] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [sortBy, setSortBy] = useState("Popular");
+
+  const {
+    cartCount,
+    wishlistCount,
+  } = useCart();
+
+  const [query, setQuery] = useState("");
+  const [activeCategory, setActiveCategory] =
+    useState("All");
+  const [sortBy, setSortBy] =
+    useState("Popular");
 
   const handleSearchSubmit = () => {
-    const term = searchInput.trim();
-    const exactCategory =
-      categories.find(
-        (category) =>
-          category.toLowerCase() === term.toLowerCase() ||
-          category.toLowerCase().includes(term.toLowerCase())
-      ) ?? "All";
-
-    setSearchInput("");
+    const term = query.trim();
 
     if (!term) {
       router.push("/search?category=All");
       return;
     }
 
+    const exactCategory =
+      categories.find(
+        (category) =>
+          category.toLowerCase() ===
+            term.toLowerCase() ||
+          category
+            .toLowerCase()
+            .includes(term.toLowerCase())
+      ) ?? "All";
+
     router.push(
-      `/search?q=${encodeURIComponent(term)}&category=${encodeURIComponent(exactCategory)}`
+      `/search?q=${encodeURIComponent(
+        term
+      )}&category=${encodeURIComponent(
+        exactCategory
+      )}`
     );
   };
 
@@ -47,44 +61,52 @@ export default function Home() {
     const nextProducts = products.filter(
       (product) =>
         activeCategory === "All" ||
-        product.category.toLowerCase() === activeCategory.toLowerCase()
+        product.category.toLowerCase() ===
+          activeCategory.toLowerCase()
     );
 
     switch (sortBy) {
       case "Price: Low to High":
-        return [...nextProducts].sort((a, b) => a.price - b.price);
+        return [...nextProducts].sort(
+          (a, b) => a.price - b.price
+        );
+
       case "Price: High to Low":
-        return [...nextProducts].sort((a, b) => b.price - a.price);
+        return [...nextProducts].sort(
+          (a, b) => b.price - a.price
+        );
+
       case "Newest":
-        return [...nextProducts].sort((a, b) => b.id - a.id);
+        return [...nextProducts].sort(
+          (a, b) => b.id - a.id
+        );
+
       case "Popular":
       default:
         return [...nextProducts].sort(
-          (a, b) => b.rating * b.reviews - a.rating * a.reviews
+          (a, b) =>
+            b.rating * b.reviews -
+            a.rating * a.reviews
         );
     }
   }, [activeCategory, sortBy]);
 
-  const handleCartQuantityChange = (_productId: number, _nextQuantity: number) => {
-    // cart logic removed
-  };
-
-  const handleToggleWishlist = (_productId: number, _isActive: boolean) => {
-    // wishlist logic removed
-  };
-
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f5f6f3] text-[#171918]">
+
       <AnnouncementBar />
 
       <Header
-        query={searchInput}
-        setQuery={setSearchInput}
+        query={query}
+        setQuery={setQuery}
         onSearchSubmit={handleSearchSubmit}
         products={products}
         setActiveCategory={setActiveCategory}
         cartCount={cartCount}
         wishlistCount={wishlistCount}
+        showBackHome
+        backHomeHref="/"
+        hideWishlist
       />
 
       <Hero />
@@ -96,14 +118,14 @@ export default function Home() {
 
       <ProductSection
         products={sortedProducts}
-        query=""
+        query={query}
         activeCategory={activeCategory}
-        setQuery={setSearchInput}
+        setQuery={setQuery}
         setActiveCategory={setActiveCategory}
         sortBy={sortBy}
         setSortBy={setSortBy}
-        onCartQuantityChange={handleCartQuantityChange}
-        onToggleWishlist={handleToggleWishlist}
+        onCartQuantityChange={() => {}}
+        onToggleWishlist={() => {}}
       />
 
       <SellexaDifference />
@@ -111,6 +133,7 @@ export default function Home() {
       <Newsletter />
 
       <Footer />
+
     </main>
   );
 }

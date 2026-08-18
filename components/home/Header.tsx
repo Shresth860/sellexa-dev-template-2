@@ -1,29 +1,41 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  Heart, 
-  Menu,
+  Heart,
   Search,
   ShoppingBag,
   User,
   X,
 } from "lucide-react";
-import { categories, type Product } from "@/data/product";
+
+import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
+import {
+  categories,
+  products as allProducts,
+} from "@/data/product";
 
 type HeaderProps = {
-  query: string;
-  setQuery: (value: string) => void;
+  /**
+   * Legacy props are kept for compatibility.
+   * CartContext is the primary search state.
+   */
+  query?: string;
+  setQuery?: (value: string) => void;
   onSearchSubmit?: () => void;
-  products: Product[];
-  setActiveCategory: (category: string) => void;
-  cartCount: number;
-  wishlistCount: number;
+
+  products?: typeof allProducts;
+  setActiveCategory?: (category: string) => void;
+
+  cartCount?: number;
+  wishlistCount?: number;
+
   showBackHome?: boolean;
   backHomeHref?: string;
+
   hideCart?: boolean;
   hideWishlist?: boolean;
 };
@@ -32,80 +44,350 @@ export default function Header({
   query,
   setQuery,
   onSearchSubmit,
-  products,
+  products = allProducts,
   setActiveCategory,
-  cartCount,
-  wishlistCount,
+  cartCount: cartCountProp,
+  wishlistCount: wishlistCountProp,
   showBackHome = false,
   backHomeHref = "/",
   hideCart = false,
   hideWishlist = false,
 }: HeaderProps) {
-  const [mobileMenu, setMobileMenu] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
-  const { user, openAuthModal } = useAuth();
+  const searchInputRef =
+    useRef<HTMLInputElement | null>(null);
 
+  const { user } = useAuth();
+
+  const {
+    searchQuery: contextSearchQuery,
+    setSearchQuery: setContextSearchQuery,
+    clearSearch,
+    cartCount: contextCartCount,
+    wishlistCount: contextWishlistCount,
+  } = useCart();
+
+  const [searchOpen, setSearchOpen] =
+    useState(false);
+
+  const [mobileMenu, setMobileMenu] =
+    useState(false);
+
+  /*
+   * --------------------------------------------------
+   * SEARCH SOURCE
+   * --------------------------------------------------
+   *
+   * CartContext is the main source of truth.
+   *
+   * Legacy query/setQuery props are supported so
+   * older pages do not break.
+   */
+  const usingLegacySearchProps =
+    typeof query === "string" &&
+    typeof setQuery === "function";
+
+  const currentQuery = usingLegacySearchProps
+    ? query
+    : contextSearchQuery;
+
+  const updateQuery = (value: string) => {
+    if (usingLegacySearchProps) {
+      setQuery(value);
+    }
+
+    setContextSearchQuery(value);
+  };
+
+  /*
+   * --------------------------------------------------
+   * LOCAL SEARCH PAGES
+   * --------------------------------------------------
+   *
+   * On these pages search NEVER navigates:
+   *
+   * /cart
+   * /wishlist
+   * /orders
+   */
+  const localSearchPage =
+    pathname === "/cart" ||
+    pathname === "/wishlist" ||
+    pathname === "/orders";
+
+  /*
+   * Clear search when changing pages.
+   */
   useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+    clearSearch();
+    setSearchOpen(false);
+    setMobileMenu(false);
 
-  const searchValue = query.trim().toLowerCase();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
-  const categorySuggestions =
-    searchValue && categories.length > 0
-      ? categories
-          .filter(
-            (category) =>
-              category !== "All" && category.toLowerCase().includes(searchValue)
-          )
-          .slice(0, 1)
-      : [];
+  /*
+   * Close search suggestions when clicking outside.
+   */
+  useEffect(() => {
+    const handlePointerDown = (
+      event: MouseEvent
+    ) => {
+      const target =
+        event.target as HTMLElement;
 
-  const productSuggestions =
-    searchValue
-      ? products
-          .filter((product) => {
-            const searchable = [
-              product.name,
-              product.category,
-              product.badge || "",
-              ...(product.keywords || []),
-            ]
-              .join(" ")
-              .toLowerCase();
+      if (
+        searchOpen &&
+        !target.closest(
+          "[data-sellexa-search]"
+        )
+      ) {
+        setSearchOpen(false);
+      }
+    };
 
-            return searchable.includes(searchValue);
-          })
-          .slice(0, 4)
-      : [];
+    document.addEventListener(
+      "mousedown",
+      handlePointerDown
+    );
 
-  const suggestions = [...categorySuggestions.map((category) => ({
-    type: "category" as const,
-    label: `Categories: ${category}`,
-    value: category,
-  })), ...productSuggestions.map((product) => ({
-    type: "product" as const,
-    label: product.name,
-    value: product.name,
-    category: product.category,
-    id: product.id,
-  }))];
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handlePointerDown
+      );
+    };
+  }, [searchOpen]);
 
-  const handleCategorySuggestionClick = (category: string) => {
-    setQuery("");
-    setActiveCategory(category);
-    router.push(`/search?category=${encodeURIComponent(category)}`);
+  const cartCount =
+    cartCountProp ?? contextCartCount;
+
+  const wishlistCount =
+    wishlistCountProp ??
+    contextWishlistCount;
+
+  const searchValue = (
+    currentQuery ?? ""
+  )
+    .trim()
+    .toLowerCase();
+
+  /*
+   * --------------------------------------------------
+   * SEARCH SUGGESTIONS
+   * --------------------------------------------------
+   */
+  const suggestions = useMemo(() => {
+    if (!searchValue) {
+      return [];
+    }
+
+    const categorySuggestions = categories
+      .filter(
+        (category) =>
+          category !== "All" &&
+          category
+            .toLowerCase()
+            .includes(searchValue)
+      )
+      .slice(0, 1)
+      .map((category) => ({
+        type: "category" as const,
+        label: `Categories: ${category}`,
+        value: category,
+      }));
+
+    const productSuggestions = products
+      .filter((product) => {
+        const searchable = [
+          product.name,
+          product.category,
+          product.badge ?? "",
+          ...(product.keywords ?? []),
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return searchable.includes(
+          searchValue
+        );
+      })
+      .slice(0, 4)
+      .map((product) => ({
+        type: "product" as const,
+        label: product.name,
+        value: product.name,
+        category: product.category,
+        id: product.id,
+      }));
+
+    return [
+      ...categorySuggestions,
+      ...productSuggestions,
+    ];
+  }, [products, searchValue]);
+
+  /*
+   * --------------------------------------------------
+   * SEARCH SUBMIT
+   * --------------------------------------------------
+   */
+  const handleSearch = () => {
+    const value = (
+      currentQuery ?? ""
+    ).trim();
+
+    /*
+     * CART / WISHLIST / ORDERS
+     *
+     * NEVER navigate.
+     *
+     * The current page reads searchQuery from
+     * CartContext and filters its own content.
+     */
+    if (localSearchPage) {
+      setContextSearchQuery(value);
+      setSearchOpen(false);
+      return;
+    }
+
+    /*
+     * SEARCH PAGE
+     */
+    if (pathname === "/search") {
+      if (value) {
+        router.push(
+          `/search?q=${encodeURIComponent(
+            value
+          )}`
+        );
+      } else {
+        router.push("/search");
+      }
+
+      setSearchOpen(false);
+      return;
+    }
+
+    /*
+     * ALL OTHER PAGES
+     */
+    if (value) {
+      router.push(
+        `/search?q=${encodeURIComponent(value)}`
+      );
+    } else {
+      router.push("/search");
+    }
+
+    setSearchOpen(false);
+
+    onSearchSubmit?.();
   };
 
-  const handleProductSuggestionClick = (productId: number) => {
-    setQuery("");
-    router.push(`/product/${productId}`);
+  /*
+   * --------------------------------------------------
+   * CLEAR SEARCH
+   * --------------------------------------------------
+   */
+  const handleClearSearch = () => {
+    updateQuery("");
+    setSearchOpen(false);
+
+    if (localSearchPage) {
+      setContextSearchQuery("");
+      return;
+    }
+
+    onSearchSubmit?.();
   };
 
-  const userDisplayName = user ? (user.name || `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User") : "";
+  /*
+   * --------------------------------------------------
+   * CATEGORY SUGGESTION
+   * --------------------------------------------------
+   */
+  const handleCategorySuggestionClick = (
+    category: string
+  ) => {
+    /*
+     * On local pages, category is simply used as
+     * the search/filter value.
+     */
+    if (localSearchPage) {
+      updateQuery(category);
+      setSearchOpen(false);
+      return;
+    }
+
+    updateQuery("");
+    setSearchOpen(false);
+
+    setActiveCategory?.(category);
+
+    router.push(
+      `/search?category=${encodeURIComponent(
+        category
+      )}`
+    );
+  };
+
+  /*
+   * --------------------------------------------------
+   * PRODUCT SUGGESTION
+   * --------------------------------------------------
+   */
+  const handleProductSuggestionClick = (
+    productId: number
+  ) => {
+    const selectedProduct = products.find(
+      (product) => product.id === productId
+    );
+
+    if (!selectedProduct) {
+      return;
+    }
+
+    /*
+     * IMPORTANT:
+     *
+     * On /cart, /wishlist and /orders,
+     * clicking a suggestion MUST NOT open
+     * product details.
+     *
+     * Instead it filters the current page.
+     */
+    if (localSearchPage) {
+      updateQuery(selectedProduct.name);
+      setSearchOpen(false);
+      return;
+    }
+
+    /*
+     * Other pages can open product details.
+     */
+    updateQuery("");
+    setSearchOpen(false);
+
+    router.push(
+      `/product/${productId}`
+    );
+  };
+
+  /*
+   * --------------------------------------------------
+   * USER
+   * --------------------------------------------------
+   */
+  const userDisplayName = user
+    ? user.name ||
+      `${user.firstName || ""} ${
+        user.lastName || ""
+      }`.trim() ||
+      "User"
+    : "";
 
   const userInitials = userDisplayName
     ? userDisplayName
@@ -116,135 +398,134 @@ export default function Header({
         .toUpperCase()
     : "U";
 
-  const handleCartNavigation = () => {
-    router.push("/cart");
-  };
-
-  const handleWishlistNavigation = () => {
-    router.push("/profile/wishlist");
-  };
-
   return (
-    <header className="mx-auto mt-3 w-[calc(100%-28px)] max-w-[1720px] ">
-      {/* Main Header */}
-      <div className="flex h-[76px] w-full items-center rounded-[22px] border border-zinc-200/80 bg-white px-3 shadow-sm sm:px-4">
+    <header className="sticky top-0 z-50 w-full border-b border-zinc-200/80 bg-white/95 backdrop-blur-xl">
+      <div className="mx-auto flex min-h-[64px] w-full max-w-[1780px] items-center gap-2 px-3 sm:min-h-[68px] sm:px-5 lg:min-h-[72px] lg:px-8">
 
-        {/* Logo */}
+        {/* =====================================================
+            LOGO
+        ====================================================== */}
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 px-2 sm:px-3"
+          onClick={() => {
+            clearSearch();
+            setSearchOpen(false);
+            setMobileMenu(false);
+          }}
+          className="flex shrink-0 items-center gap-2"
         >
-          <span className="grid h-8 w-8 place-items-center rounded-[9px] bg-[#171a18] text-sm font-black text-white">
+          <span className="grid h-8 w-8 place-items-center rounded-[9px] bg-[#171a18] text-sm font-black text-white sm:h-9 sm:w-9">
             S
           </span>
 
-          <span className="text-[15px] font-black tracking-[-0.04em]">
+          <span className="text-[15px] font-black tracking-[-0.04em] sm:text-base">
             SELLEXA
           </span>
         </Link>
 
-        {/* Search */}
-        <div className="relative ml-2 w-full max-w-[420px] sm:ml-4">
-          <div className="group flex h-[56px] w-full items-center gap-2 rounded-[20px] border border-[#e7e5e4] bg-[linear-gradient(135deg,#fafaf9_0%,#f4f5f1_100%)] px-3 shadow-[0_10px_30px_rgba(23,25,24,0.06)] transition-all duration-200 focus-within:border-[#171a18] focus-within:shadow-[0_16px_40px_rgba(23,25,24,0.09)]">
+        {/* =====================================================
+            DESKTOP SEARCH
+        ====================================================== */}
+        <div
+          data-sellexa-search
+          className="relative ml-4 hidden w-full max-w-[480px] lg:block"
+        >
+          <div className="flex h-11 w-full items-center gap-2 rounded-2xl border border-zinc-200 bg-zinc-50/80 px-3 transition focus-within:border-zinc-400 focus-within:bg-white focus-within:shadow-sm">
+            <Search
+              size={17}
+              strokeWidth={1.8}
+              className="shrink-0 text-zinc-400"
+            />
+
             <input
               ref={searchInputRef}
               type="text"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              value={currentQuery ?? ""}
+              onChange={(event) =>
+                updateQuery(
+                  event.target.value
+                )
+              }
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   event.preventDefault();
-                  onSearchSubmit?.();
+                  handleSearch();
+                }
+
+                if (event.key === "Escape") {
+                  handleClearSearch();
                 }
               }}
               placeholder="Search products..."
-              className="min-w-0 flex-1 border-0 bg-transparent px-1 text-sm font-medium text-zinc-900 outline-none placeholder:text-zinc-400"
+              className="min-w-0 flex-1 bg-transparent text-sm font-medium text-zinc-900 outline-none placeholder:text-zinc-400"
             />
 
-            {query ? (
+            {currentQuery?.trim() ? (
               <button
                 type="button"
-                onClick={() => {
-                  setQuery("");
-                  onSearchSubmit?.();
-                }}
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-900"
+                onClick={handleClearSearch}
                 aria-label="Clear search"
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-900"
               >
-                <X width={14} height={14} />
+                <X size={14} />
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => {
-                  onSearchSubmit?.();
-                  searchInputRef.current?.focus();
+                  setSearchOpen(true);
+
+                  requestAnimationFrame(
+                    () => {
+                      searchInputRef.current?.focus();
+                    }
+                  );
                 }}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#171a18] text-white shadow-[0_10px_18px_rgba(23,25,24,0.22)] transition hover:bg-zinc-800"
                 aria-label="Search"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#171a18] text-white transition hover:bg-zinc-800"
               >
-                <Search width={15} height={15} />
+                <Search size={14} />
               </button>
             )}
           </div>
 
-          {suggestions.length > 0 && (
-            <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-[22px] border border-zinc-200 bg-white/95 shadow-[0_18px_40px_rgba(15,23,42,0.12)] backdrop-blur-sm">
-              {suggestions.map((suggestion) =>
-                suggestion.type === "category" ? (
-                  <button
-                    key={suggestion.value}
-                    type="button"
-                    className="block w-full border-b border-zinc-100 px-4 py-3 text-left text-sm text-zinc-900 transition hover:bg-zinc-50"
-                    onClick={() => {
-                      handleCategorySuggestionClick(suggestion.value);
-                    }}
-                  >
-                    <span className="font-semibold">{suggestion.label}</span>
-                  </button>
-                ) : (
-                  <button
-                    key={suggestion.id}
-                    type="button"
-                    className="block w-full border-b border-zinc-100 px-4 py-3 text-left text-sm text-zinc-900 transition hover:bg-zinc-50"
-                    onClick={() => {
-                      handleProductSuggestionClick(suggestion.id);
-                    }}
-                  >
-                    <span className="font-semibold">{suggestion.label}</span>
-                    <span className="ml-2 text-[11px] font-medium text-zinc-500">
-                      {suggestion.category}
-                    </span>
-                  </button>
-                )
-              )}
-            </div>
-          )}
+          {searchValue &&
+            suggestions.length > 0 && (
+              <SearchSuggestions
+                suggestions={suggestions}
+                onCategoryClick={
+                  handleCategorySuggestionClick
+                }
+                onProductClick={
+                  handleProductSuggestionClick
+                }
+              />
+            )}
         </div>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Actions */}
-        <div className="flex shrink-0 items-center gap-2">
+        {/* =====================================================
+            DESKTOP ACTIONS
+        ====================================================== */}
+        <div className="hidden items-center gap-2 lg:flex">
 
           {!hideCart && (
             <button
               type="button"
+              onClick={() =>
+                router.push("/cart")
+              }
               aria-label="Shopping cart"
-              onClick={handleCartNavigation}
-              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white p-0 text-zinc-900 transition hover:border-zinc-300 hover:bg-zinc-50"
+              className="relative grid h-10 w-10 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-900 transition hover:bg-zinc-50"
             >
               <ShoppingBag
-                width={19}
-                height={19}
+                size={18}
                 strokeWidth={1.8}
               />
 
-              {isHydrated && cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
-                  {cartCount}
-                </span>
+              {cartCount > 0 && (
+                <Badge count={cartCount} />
               )}
             </button>
           )}
@@ -252,150 +533,251 @@ export default function Header({
           {!hideWishlist && (
             <button
               type="button"
+              onClick={() =>
+                router.push("/wishlist")
+              }
               aria-label="Wishlist"
-              onClick={handleWishlistNavigation}
-              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white p-0 text-zinc-900 transition hover:border-zinc-300 hover:bg-zinc-50"
+              className="relative grid h-10 w-10 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-900 transition hover:bg-zinc-50"
             >
               <Heart
-                width={19}
-                height={19}
-                fill="none"
+                size={18}
                 strokeWidth={1.8}
               />
 
-              {isHydrated && wishlistCount > 0 && (
-                <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#171a18] text-[10px] font-bold leading-none text-white ring-2 ring-white">
-                  {wishlistCount}
-                </span>
+              {wishlistCount > 0 && (
+                <Badge
+                  count={wishlistCount}
+                />
               )}
             </button>
           )}
 
-
           {showBackHome && (
             <button
               type="button"
-              onClick={() => router.push(backHomeHref)}
-              className="hidden h-12 shrink-0 items-center rounded-full border border-zinc-200 bg-zinc-50 px-4 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-100 sm:flex"
+              onClick={() =>
+                router.push(backHomeHref)
+              }
+              className="h-10 rounded-full border border-zinc-200 bg-zinc-50 px-4 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-700 transition hover:bg-zinc-100"
             >
               Back to home
             </button>
           )}
 
-          {/* User Profile Link or Login Button */}
           {user ? (
             <Link
               href="/profile"
-              className="hidden h-12 shrink-0 items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 pr-4 transition hover:border-zinc-300 hover:bg-zinc-50 sm:flex"
-              title="My Profile"
+              className="flex h-10 items-center gap-2 rounded-full border border-zinc-200 bg-white px-2 pr-3 transition hover:bg-zinc-50"
             >
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#171a18] text-[11px] font-bold text-white ring-1 ring-zinc-200">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#171a18] text-[10px] font-bold text-white">
                 {userInitials}
               </span>
 
-              <span className="hidden whitespace-nowrap text-[11px] font-semibold text-zinc-800 md:block">
+              <span className="max-w-[110px] truncate text-[11px] font-semibold text-zinc-800">
                 {userDisplayName}
               </span>
             </Link>
           ) : (
-            <div className="hidden items-center gap-2 sm:flex">
-              <Link
-                href="/auth/login"
-                className="flex h-11 shrink-0 items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 text-xs font-semibold text-zinc-800 transition hover:border-zinc-300 hover:bg-zinc-50"
-              >
-                <User width={15} height={15} />
-                <span>Login</span>
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="flex h-11 shrink-0 items-center rounded-full bg-[#171a18] px-4 text-xs font-semibold text-white transition hover:bg-zinc-800"
-              >
-                Sign Up
-              </Link>
-            </div>
+            <Link
+              href="/auth/login"
+              className="flex h-10 items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-50"
+            >
+              <User size={14} />
+              Login
+            </Link>
           )}
-
-          {/* Mobile Menu */}
-          <button
-            type="button"
-            onClick={() => setMobileMenu((value) => !value)}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 lg:hidden"
-            aria-label="Toggle menu"
-          >
-            {mobileMenu ? (
-              <X
-                width={19}
-                height={19}
-                strokeWidth={1.8}
-              />
-            ) : (
-              <Menu
-                width={19}
-                height={19}
-                strokeWidth={1.8}
-              />
-            )}
-          </button>
-
         </div>
+
+        {/* =====================================================
+            MOBILE SEARCH BUTTON
+        ====================================================== */}
+        <button
+          type="button"
+          onClick={() => {
+            setSearchOpen(
+              (value) => !value
+            );
+            setMobileMenu(false);
+          }}
+          aria-label={
+            searchOpen
+              ? "Close search"
+              : "Search products"
+          }
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-900 transition active:scale-95 lg:hidden"
+        >
+          {searchOpen ? (
+            <X
+              size={19}
+              strokeWidth={1.8}
+            />
+          ) : (
+            <Search
+              size={19}
+              strokeWidth={1.8}
+            />
+          )}
+        </button>
       </div>
 
-      {/* Mobile Menu */}
-      {mobileMenu && (
-        <div className="mt-2 rounded-2xl border border-zinc-200 bg-white p-3 shadow-lg lg:hidden">
+      {/* =====================================================
+          MOBILE SEARCH
+      ====================================================== */}
+      {searchOpen && (
+        <div
+          data-sellexa-search
+          className="border-t border-zinc-100 bg-white px-3 pb-3 pt-2 lg:hidden"
+        >
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleSearch();
+            }}
+            className="relative"
+          >
+            <div className="flex h-11 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 focus-within:border-zinc-400 focus-within:bg-white">
+              <Search
+                size={17}
+                className="shrink-0 text-zinc-400"
+              />
 
-          <nav className="flex flex-col gap-1">
-            <a
-              href="#shop"
-              onClick={() => setMobileMenu(false)}
-              className="rounded-xl px-4 py-3 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950"
-            >
-              Shop
-            </a>
+              <input
+                autoFocus
+                type="text"
+                value={currentQuery ?? ""}
+                onChange={(event) =>
+                  updateQuery(
+                    event.target.value
+                  )
+                }
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    setSearchOpen(false);
+                  }
+                }}
+                placeholder="Search products..."
+                className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-zinc-400"
+              />
 
-            <a
-              href="#deals"
-              onClick={() => setMobileMenu(false)}
-              className="rounded-xl px-4 py-3 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950"
-            >
-              Deals
-            </a>
+              {currentQuery?.trim() && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  aria-label="Clear search"
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-zinc-500 transition active:scale-95"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </form>
 
-            <a
-              href="#new"
-              onClick={() => setMobileMenu(false)}
-              className="rounded-xl px-4 py-3 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950"
-            >
-              New Arrivals
-            </a>
-
-            <a
-              href="#categories"
-              onClick={() => setMobileMenu(false)}
-              className="rounded-xl px-4 py-3 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950"
-            >
-              Categories
-            </a>
-          </nav>
-
-          {/* Mobile Search */}
-          <div className="mt-3 flex h-11 items-center gap-2 rounded-xl bg-zinc-50 px-3">
-            <Search
-              width={16}
-              height={16}
-              className="shrink-0 text-zinc-500"
-            />
-
-            <input
-              type="text"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search products..."
-              className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-zinc-400"
-            />
-          </div>
+          {searchValue &&
+            suggestions.length > 0 && (
+              <div className="mt-2">
+                <SearchSuggestions
+                  suggestions={suggestions}
+                  onCategoryClick={
+                    handleCategorySuggestionClick
+                  }
+                  onProductClick={
+                    handleProductSuggestionClick
+                  }
+                />
+              </div>
+            )}
         </div>
       )}
     </header>
+  );
+}
+
+/* ============================================================
+   BADGE
+============================================================ */
+
+function Badge({
+  count,
+}: {
+  count: number;
+}) {
+  return (
+    <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#171a18] px-1 text-[9px] font-bold leading-none text-white ring-2 ring-white">
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
+
+/* ============================================================
+   SEARCH SUGGESTIONS
+============================================================ */
+
+type Suggestion =
+  | {
+      type: "category";
+      label: string;
+      value: string;
+    }
+  | {
+      type: "product";
+      label: string;
+      value: string;
+      category: string;
+      id: number;
+    };
+
+function SearchSuggestions({
+  suggestions,
+  onCategoryClick,
+  onProductClick,
+}: {
+  suggestions: Suggestion[];
+  onCategoryClick: (
+    category: string
+  ) => void;
+  onProductClick: (
+    productId: number
+  ) => void;
+}) {
+  return (
+    <div className="max-h-[280px] overflow-y-auto rounded-2xl border border-zinc-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
+      {suggestions.map((suggestion) =>
+        suggestion.type === "category" ? (
+          <button
+            key={`category-${suggestion.value}`}
+            type="button"
+            onClick={() =>
+              onCategoryClick(
+                suggestion.value
+              )
+            }
+            className="block w-full border-b border-zinc-100 px-4 py-3 text-left text-sm text-zinc-900 transition hover:bg-zinc-50 active:bg-zinc-100"
+          >
+            <span className="font-semibold">
+              {suggestion.label}
+            </span>
+          </button>
+        ) : (
+          <button
+            key={`product-${suggestion.id}`}
+            type="button"
+            onClick={() =>
+              onProductClick(
+                suggestion.id
+              )
+            }
+            className="block w-full border-b border-zinc-100 px-4 py-3 text-left text-sm text-zinc-900 transition hover:bg-zinc-50 active:bg-zinc-100"
+          >
+            <span className="font-semibold">
+              {suggestion.label}
+            </span>
+
+            <span className="ml-2 text-[11px] font-medium text-zinc-500">
+              {suggestion.category}
+            </span>
+          </button>
+        )
+      )}
+    </div>
   );
 }

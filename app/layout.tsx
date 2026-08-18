@@ -4,7 +4,8 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { CartProvider } from "@/context/CartContext";
-
+import MobileBottomNav from "@/components/home/bottomnav";
+import { SearchProvider } from "@/context/SearchContext";
 const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
@@ -30,7 +31,10 @@ export default function RootLayout({
       <body className="h-full" suppressHydrationWarning>
         <AuthProvider>
           <CartProvider>
+            <SearchProvider>
             {children}
+            </SearchProvider>
+            <MobileBottomNav />
             <AuthModal />
           </CartProvider>
         </AuthProvider>
