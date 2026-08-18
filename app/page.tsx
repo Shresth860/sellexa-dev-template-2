@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useCart } from "@/context/CartContext";
-import { useSearch } from "@/context/SearchContext";
 
 import AnnouncementBar from "@/components/home/AnnouncementBar";
 import Header from "@/components/home/Header";
@@ -25,27 +24,17 @@ export default function Home() {
     wishlistCount,
   } = useCart();
 
-  const {
-    searchQuery,
-    setSearchQuery,
-  } = useSearch();
-
+  const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] =
     useState("All");
-
   const [sortBy, setSortBy] =
     useState("Popular");
 
-  /*
-   * SEARCH
-   */
   const handleSearchSubmit = () => {
-    const term = searchQuery.trim();
+    const term = query.trim();
 
     if (!term) {
-      router.push(
-        "/search?category=All"
-      );
+      router.push("/search?category=All");
       return;
     }
 
@@ -68,17 +57,13 @@ export default function Home() {
     );
   };
 
-  /*
-   * FILTER + SORT
-   */
   const sortedProducts = useMemo(() => {
-    const nextProducts =
-      products.filter(
-        (product) =>
-          activeCategory === "All" ||
-          product.category.toLowerCase() ===
-            activeCategory.toLowerCase()
-      );
+    const nextProducts = products.filter(
+      (product) =>
+        activeCategory === "All" ||
+        product.category.toLowerCase() ===
+          activeCategory.toLowerCase()
+    );
 
     switch (sortBy) {
       case "Price: Low to High":
@@ -104,52 +89,49 @@ export default function Home() {
             a.rating * a.reviews
         );
     }
-  }, [
-    activeCategory,
-    sortBy,
-  ]);
+  }, [activeCategory, sortBy]);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f5f6f3] text-[#171918]">
 
       <AnnouncementBar />
 
-      {/* Header */}
-      <Header />
-
-      {/* Hero */}
-      <Hero />
-
-      {/* Categories */}
-      <Categories
-        activeCategory={activeCategory}
-        setActiveCategory={
-          setActiveCategory
-        }
+      <Header
+        query={query}
+        setQuery={setQuery}
+        onSearchSubmit={handleSearchSubmit}
+        products={products}
+        setActiveCategory={setActiveCategory}
+        cartCount={cartCount}
+        wishlistCount={wishlistCount}
+        showBackHome
+        backHomeHref="/"
+        hideWishlist
       />
 
-      {/* Products */}
+      <Hero />
+
+      <Categories
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+      />
+
       <ProductSection
         products={sortedProducts}
-        query={searchQuery}
+        query={query}
         activeCategory={activeCategory}
-        setQuery={setSearchQuery}
-        setActiveCategory={
-          setActiveCategory
-        }
+        setQuery={setQuery}
+        setActiveCategory={setActiveCategory}
         sortBy={sortBy}
         setSortBy={setSortBy}
         onCartQuantityChange={() => {}}
         onToggleWishlist={() => {}}
       />
 
-      {/* Sellexa Difference */}
       <SellexaDifference />
 
-      {/* Newsletter */}
       <Newsletter />
 
-      {/* Footer */}
       <Footer />
 
     </main>

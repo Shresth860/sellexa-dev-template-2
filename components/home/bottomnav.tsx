@@ -23,7 +23,7 @@ const navItems = [
   },
   {
     label: "Wishlist",
-    href: "/wishlist",
+    href: "/profile/wishlist",
     icon: Heart,
   },
   {
