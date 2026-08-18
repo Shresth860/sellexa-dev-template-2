@@ -1,5 +1,5 @@
-import WishlistPage from "@/components/wishlist/WishlistPage";
+import { redirect } from "next/navigation";
 
-export default function WishlistRoute() {
-  return <WishlistPage />;
+export default function WishlistRedirectPage() {
+  redirect("/profile/wishlist");
 }
